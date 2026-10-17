@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+.pytest_cache/
+
+# Local databases
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
+# Node.js and Expo
+node_modules/
+.expo/
+dist/
+web-build/
+npm-debug.log*
+
+# Build and cache files
+build/
+coverage/
+
+# Editor and operating system files
+.vscode/
+.DS_Store
+Thumbs.db

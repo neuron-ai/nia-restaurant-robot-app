@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NIA | Robot Operations</title>
+<style>
+:root{
+  --bg:#080d18;--panel:#111a2b;--panel2:#151f32;--border:#26334a;
+  --text:#e8eef8;--muted:#91a0b8;--cyan:#42d6d0;--blue:#6495ff;
+  --green:#4ade80;--amber:#fbbf24;--red:#fb7185;--shadow:0 12px 32px #0003;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 80% -15%,#15314b 0,transparent 38%),var(--bg);color:var(--text);font:14px/1.5 Inter,"Segoe UI",Arial,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer;transition:transform .15s,border-color .15s,background .15s}
+button:hover{transform:translateY(-1px)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.app{min-height:100vh;display:grid;grid-template-columns:242px minmax(0,1fr)}
+.sidebar{background:#0b1220;border-right:1px solid var(--border);padding:24px 15px;display:flex;flex-direction:column;gap:26px}
+.brand{display:flex;align-items:center;gap:11px;padding:0 8px}
+.brand-mark{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#37d6ce,#477dff);display:grid;place-items:center;color:#071321;font-size:23px;box-shadow:0 7px 24px #42d6d033}
+.brand h1{font-size:17px;letter-spacing:1.4px;margin:0}.brand p{margin:1px 0 0;color:var(--muted);font-size:11px;letter-spacing:1.1px}
+.nav-label{padding:0 11px;color:#64748b;font-size:10px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;margin-bottom:7px}
+.nav-btn{width:100%;border:1px solid transparent;background:transparent;color:#a7b5ca;text-align:left;border-radius:10px;padding:11px 12px;margin:3px 0;display:flex;gap:11px;align-items:center}
+.nav-btn .ico{width:20px;text-align:center;font-size:16px}.nav-btn.active{background:#12263a;color:#e8ffff;border-color:#1e4b5a}.nav-btn.active .ico{color:var(--cyan)}
+.sidebar-bottom{margin-top:auto;background:#101a2a;border:1px solid var(--border);border-radius:13px;padding:14px}
+.small-label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:800}
+.system-line{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 12px currentColor}.dot.off{background:var(--red)}
+main{min-width:0;padding:25px clamp(16px,3vw,38px) 30px}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:23px}
+.eyebrow{color:var(--cyan);font-size:10px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase}
+h2.page-title{font-size:27px;line-height:1.2;margin:5px 0 7px;letter-spacing:-.6px}
+.subtitle{margin:0;color:var(--muted);font-size:13px}
+.top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.connection{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);background:#101827;border-radius:10px;color:#b8c6d9;font-size:12px}
+.btn{border:1px solid #34445d;border-radius:9px;background:#1b2940;color:var(--text);padding:9px 12px;font-weight:700;font-size:12px}
+.btn.primary{background:linear-gradient(135deg,#35cfc8,#31aeb9);border-color:transparent;color:#06151c}
+.btn.secondary{background:#172236}.btn.danger{background:#3a1b2a;border-color:#713047;color:#ffc4ce}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.notice{display:none;padding:12px 15px;border:1px solid #27614a;background:#102b24;color:#a7f3d0;border-radius:11px;margin-bottom:17px}
+.notice.show{display:block}.notice.err{border-color:#7f3044;background:#321622;color:#fecdd3}
+.panel{background:linear-gradient(155deg,#131e30,#0f1726);border:1px solid var(--border);border-radius:15px;box-shadow:var(--shadow);padding:18px;min-width:0}
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.section-head h3{margin:0;font-size:14px;letter-spacing:.1px}.section-head p{margin:4px 0 0;color:var(--muted);font-size:11px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:16px}
+.metric{background:linear-gradient(145deg,#141f32,#101827);border:1px solid var(--border);border-radius:14px;padding:16px;min-width:0;position:relative;overflow:hidden}
+.metric:after{content:"";position:absolute;right:-20px;top:-25px;width:85px;height:85px;border-radius:50%;background:var(--glow,#42d6d0);opacity:.07}
+.metric-top{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted);font-size:11px}
+.metric-icon{display:grid;place-items:center;width:31px;height:31px;border-radius:9px;background:#1d3443;color:var(--cyan);font-size:16px}
+.metric-value{font-size:28px;line-height:1.15;font-weight:800;margin:13px 0 5px;letter-spacing:-.7px}
+.metric-note{font-size:10px;color:var(--muted)}
+.content-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(310px,.75fr);gap:16px;margin-bottom:16px}
+.robot-status{display:flex;gap:15px;align-items:center;padding:15px;border:1px solid #263b50;background:#0d1726;border-radius:12px;margin-bottom:14px}
+.robot-avatar{width:63px;height:63px;flex:0 0 63px;border-radius:17px;display:grid;place-items:center;background:linear-gradient(145deg,#1b4350,#172b49);font-size:32px;border:1px solid #28606b}
+.robot-status h4{margin:0 0 3px;font-size:16px;text-transform:capitalize}.robot-status p{margin:0;color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+.status-pill{margin-left:auto;align-self:flex-start;border-radius:30px;padding:5px 9px;background:#173b30;color:#86efac;font-size:10px;font-weight:800;text-transform:uppercase;white-space:nowrap}
+.status-pill.warn{background:#3a2b13;color:#fcd34d}.status-pill.bad{background:#401d2b;color:#fda4af}
+.battery-head{display:flex;justify-content:space-between;gap:10px;color:#a9b7ca;font-size:11px;margin-bottom:7px}
+.battery-track{height:8px;background:#263247;border-radius:99px;overflow:hidden}.battery-fill{height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#2dd4bf,#7ee787);transition:width .3s}
+.robot-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.detail{padding:11px;background:#0d1726;border:1px solid #202d41;border-radius:10px;min-width:0}
+.detail span{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}.detail strong{display:block;font-size:12px;overflow-wrap:anywhere}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{min-width:0}.field.full{grid-column:1/-1}
+label{display:block;font-size:11px;color:#b5c2d4;font-weight:700;margin-bottom:6px}
+input{width:100%;background:#0a1220;color:var(--text);border:1px solid #304058;border-radius:8px;padding:10px 11px;min-width:0}
+input::placeholder{color:#607089}
+.helper{font-size:10px;color:var(--muted);margin:10px 0 0}
+.wide{width:100%;margin-top:13px}
+.workflow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.step{position:relative;background:#0c1523;border:1px solid #25344a;border-radius:10px;padding:12px 10px;min-height:85px}
+.step-num{font-size:10px;color:var(--cyan);font-weight:800;letter-spacing:1px}
+.step-name{font-size:11px;font-weight:750;margin:6px 0 4px}
+.step-desc{font-size:10px;color:var(--muted);line-height:1.4}
+.action-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.progress-strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:8px 0 15px}
+.progress-node{display:flex;align-items:center;gap:8px;min-width:0;border:1px solid #26364c;background:#0c1523;border-radius:10px;padding:10px;color:#71829b}
+.progress-node span{display:grid;place-items:center;width:25px;height:25px;flex:0 0 25px;border-radius:50%;background:#1b2940;font-size:10px;font-weight:800}
+.progress-node strong{font-size:10px;font-weight:700}
+.progress-node.active{border-color:#277b80;background:#102b35;color:#d7ffff}
+.progress-node.active span{background:var(--cyan);color:#071321}
+.progress-node.done{border-color:#285b48;color:#9cebc1}
+.progress-node.done span{background:#1d6b4c;color:#d1fae5}
+.next-action{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:15px;border:1px solid #2a4055;border-radius:12px;background:linear-gradient(100deg,#12253a,#101b2b)}
+.next-action-copy{min-width:0}.next-action h4{font-size:15px;margin:4px 0}.next-action p{color:var(--muted);font-size:11px;margin:0}
+.next-action .btn{min-width:185px}
+.advanced-actions{margin-top:12px;border-top:1px solid #243147;padding-top:12px}
+.advanced-actions summary{color:#aabbd0;font-size:11px;font-weight:700;cursor:pointer;user-select:none}
+.advanced-actions[open] summary{margin-bottom:8px}
+@media(max-width:760px){.progress-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.progress-node:last-child{grid-column:1/-1}.next-action{align-items:stretch;flex-direction:column}.next-action .btn{width:100%;min-width:0}}
+
+.action-btn{min-height:65px;text-align:left;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.action-btn strong{font-size:11px}.action-btn span{font-size:10px;color:var(--muted);font-weight:400}
+.lower-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:16px;margin-bottom:16px}
+.exception-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.exception-grid .field{grid-column:1/-1}
+.queue{display:grid;gap:10px}
+.delivery-card{border:1px solid #27354b;background:#0d1726;border-radius:11px;padding:13px}
+.delivery-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.delivery-title{font-weight:800;font-size:12px}.delivery-sub{color:var(--muted);font-size:10px;margin-top:3px}
+.pill{display:inline-block;border-radius:30px;background:#1b2c45;color:#a9c5ff;padding:5px 8px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.4px}
+.pill.completed{background:#17392d;color:#86efac}.pill.error{background:#401d2b;color:#fda4af}.pill.active{background:#3b3016;color:#fcd34d}
+.delivery-items{color:#bdc9d9;font-size:11px;margin:10px 0}
+.delivery-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid #202c40;padding-top:10px;color:var(--muted);font-size:10px}
+.empty{border:1px dashed #334258;border-radius:10px;padding:25px 15px;text-align:center;color:var(--muted);font-size:12px}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#080f1b;border:1px solid #253249;color:#a9c6e9;border-radius:10px;padding:12px;max-height:250px;overflow:auto;font-size:11px;margin:0}
+.footer{color:#66758d;font-size:10px;text-align:center;padding:12px 0 0}
+.view{display:none}.view.active{display:block}
+@media(max-width:1050px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.content-grid,.lower-grid{grid-template-columns:1fr}.workflow{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:680px){.app{grid-template-columns:1fr}.sidebar{padding:12px;gap:12px;border-right:0;border-bottom:1px solid var(--border)}.brand{padding:0 3px}.nav-label,.sidebar-bottom{display:none}.nav-list{display:flex;overflow-x:auto;gap:5px}.nav-btn{white-space:nowrap;width:auto;flex:0 0 auto;margin:0;padding:8px 10px}.nav-btn .ico{display:none}main{padding:18px 13px}.topbar{margin-bottom:17px}.page-title{font-size:23px!important}.metrics{gap:9px}.metric{padding:12px}.metric-value{font-size:24px}.workflow{grid-template-columns:repeat(2,minmax(0,1fr))}.action-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:14px}.robot-status{align-items:flex-start;gap:10px}.robot-avatar{width:48px;height:48px;flex-basis:48px;font-size:25px}.status-pill{font-size:9px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">◈</div><div><h1>NIA</h1><p>ROBOT OPERATIONS</p></div></div>
+  <div>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav-list">
+      <button class="nav-btn active" data-view="overview"><span class="ico">▦</span>Overview</button>
+      <button class="nav-btn" data-view="deliveries"><span class="ico">⇢</span>Deliveries</button>
+      <button class="nav-btn" data-view="controls"><span class="ico">⌘</span>Robot controls</button>
+      <button class="nav-btn" data-view="events"><span class="ico">≋</span>API response</button>
+    </nav>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="small-label">System monitor</div>
+    <div class="system-line"><i class="dot off" id="sideDot"></i><span id="sideConnection">Connecting to backend</span></div>
+    <div class="system-line"><span style="color:var(--cyan)">◈</span><span>Simulation mode</span></div>
+    <p class="helper">Physical robot control is not connected.</p>
+  </div>
+</aside>
+<main>
+  <div class="topbar">
+    <div><div class="eyebrow">Restaurant automation platform</div><h2 class="page-title">Operations overview</h2><p class="subtitle">Monitor robot readiness, dispatch food orders and track delivery progress.</p></div>
+    <div class="top-actions"><div class="connection"><i class="dot off" id="topDot"></i><span id="connection">Connecting…</span></div><button class="btn secondary" onclick="refresh()">↻ Refresh data</button></div>
+  </div>
+  <div id="message" class="notice" role="status" aria-live="polite"></div>
+  <section class="view active" id="view-overview">
+    <div class="metrics">
+      <div class="metric" style="--glow:#42d6d0"><div class="metric-top">Total deliveries <span class="metric-icon">▤</span></div><div class="metric-value" id="totalCount">—</div><div class="metric-note">All recorded orders</div></div>
+      <div class="metric" style="--glow:#6495ff"><div class="metric-top">Active tasks <span class="metric-icon" style="color:#8db0ff;background:#1c2b49">⇢</span></div><div class="metric-value" id="activeCount">—</div><div class="metric-note">Not yet finalized</div></div>
+      <div class="metric" style="--glow:#4ade80"><div class="metric-top">Completed <span class="metric-icon" style="color:#86efac;background:#17392d">✓</span></div><div class="metric-value" id="completedCount">—</div><div class="metric-note">Handoff recorded</div></div>
+      <div class="metric" style="--glow:#fbbf24"><div class="metric-top">Robot battery <span class="metric-icon" style="color:#fcd34d;background:#3a3017">ϟ</span></div><div class="metric-value" id="batteryMetric">—</div><div class="metric-note" id="batteryNote">Waiting for robot data</div></div>
+    </div>
+    <div class="content-grid">
+      <section class="panel">
+        <div class="section-head"><div><h3>Robot status</h3><p>Current robot telemetry from the NIA backend</p></div><span class="pill" id="robotPill">Loading</span></div>
+        <div class="robot-status"><div class="robot-avatar">🤖</div><div style="min-width:0;flex:1"><h4 id="robotStatus">Loading robot…</h4><p id="robotMeta">Waiting for backend telemetry</p></div></div>
+        <div class="battery-head"><span>Battery level</span><strong id="batteryText">—</strong></div><div class="battery-track"><div class="battery-fill" id="batteryFill"></div></div>
+        <div class="robot-details"><div class="detail"><span>Robot identifier</span><strong id="robotId">NIA-01</strong></div><div class="detail"><span>Active delivery</span><strong id="robotTask">None</strong></div><div class="detail"><span>Current location</span><strong id="robotLocation">—</strong></div><div class="detail"><span>Last update</span><strong id="robotUpdated">—</strong></div></div>
+      </section>
+      <section class="panel">
+        <div class="section-head"><div><h3>Create delivery task</h3><p>Simulate a KDS Food Ready event</p></div><span class="pill">KDS event</span></div>
+        <form id="readyForm" class="form-grid">
+          <div class="field"><label for="order">POS/KDS order ID</label><input id="order" value="ORD-1001" required maxlength="80"></div>
+          <div class="field"><label for="table">Table number</label><input id="table" type="number" min="1" value="2" required></div>
+          <div class="field full"><label for="items">Food items · comma-separated</label><input id="items" value="Veg Burger, French Fries" required></div>
+          <div class="field full"><button class="btn primary wide" type="submit">＋ Send Food Ready event</button></div>
+        </form>
+        <p class="helper">A new unique order ID is required for each new delivery.</p>
+      </section>
+    </div>
+    <section class="panel" style="margin-bottom:16px">
+      <div class="section-head"><div><h3>Delivery workflow</h3><p>Use the selected task to advance the simulated delivery lifecycle.</p></div><div class="field" style="min-width:110px"><label for="did">Selected delivery ID</label><input id="did" type="number" min="1" value="1"></div></div>
+      <div class="progress-strip" id="workflowProgress">
+        <div class="progress-node" data-stage="0"><span>1</span><strong>Kitchen pickup</strong></div>
+        <div class="progress-node" data-stage="1"><span>2</span><strong>Load food</strong></div>
+        <div class="progress-node" data-stage="2"><span>3</span><strong>Deliver</strong></div>
+        <div class="progress-node" data-stage="3"><span>4</span><strong>Handoff</strong></div>
+        <div class="progress-node" data-stage="4"><span>5</span><strong>Return</strong></div>
+      </div>
+      <div class="next-action">
+        <div class="next-action-copy"><div class="small-label">Next valid action</div><h4 id="nextActionTitle">Select a delivery</h4><p id="nextActionHint">Choose a delivery ID to see the next step.</p></div>
+        <button class="btn primary" id="nextActionButton" onclick="runNextAction()" disabled>Select delivery</button>
+      </div>
+      <details class="advanced-actions">
+        <summary>Advanced workflow actions</summary>
+        <div class="action-grid" style="margin-top:12px">
+          <button class="btn action-btn" onclick="act('pickup-arrived')"><strong>Arrived at kitchen</strong><span>Begin pickup</span></button>
+          <button class="btn action-btn" onclick="act('pickup-confirm')"><strong>Confirm food loaded</strong><span>Staff confirmation</span></button>
+          <button class="btn action-btn" onclick="act('dispatch')"><strong>Dispatch to table</strong><span>Start simulated trip</span></button>
+          <button class="btn action-btn" onclick="act('arrive')"><strong>Arrived at table</strong><span>Confirm destination</span></button>
+          <button class="btn action-btn" onclick="act('handoff')"><strong>Confirm handoff</strong><span>Server action</span></button>
+          <button class="btn action-btn" onclick="act('station-confirm')"><strong>Complete delivery</strong><span>Record completion event</span></button>
+          <button class="btn action-btn" onclick="returned()"><strong>Return to staging</strong><span>Release robot</span></button>
+        </div>
+      </details>
+    </section>
+    <section class="panel">
+      <div class="section-head"><div><h3>Recent deliveries</h3><p>Latest tasks recorded in SQLite</p></div><button class="btn secondary" onclick="loadDeliveries()">Refresh queue</button></div>
+      <div id="recentDeliveries" class="queue"><div class="empty">Loading delivery history…</div></div>
+      <button class="btn secondary wide" onclick="navigate('deliveries')">View all deliveries →</button>
+    </section>
+  </section>
+  <section class="view" id="view-deliveries">
+    <section class="panel">
+      <div class="section-head"><div><h3>Delivery queue & history</h3><p>Inspect tasks and select one for workflow actions.</p></div><button class="btn secondary" onclick="loadDeliveries()">↻ Refresh queue</button></div>
+      <div id="allDeliveries" class="queue"><div class="empty">Loading delivery history…</div></div><div class="panel" style="margin-top:16px"><h3>Selected delivery event history</h3><p class="helper">Persistent audit trail of status changes and exceptions.</p><div id="selectedHistory" class="queue">Select a delivery and click View history.</div></div>
+    </section>
+  </section>
+  <section class="view" id="view-controls">
+    <div class="lower-grid">
+      <section class="panel">
+        <div class="section-head"><div><h3>Delivery exceptions</h3><p>Exception controls for simulation and staff workflow.</p></div></div>
+        <div class="exception-grid">
+          <div class="field"><label for="eid">Delivery ID</label><input id="eid" type="number" min="1" value="1"></div>
+          <div class="field"><label for="notes">Reason / staff note</label><input id="notes" value="Staff assistance required"></div>
+          <button class="btn danger" onclick="exception('cancel')">Cancel before departure</button>
+          <button class="btn secondary" onclick="exception('route-blocked')">Mark route blocked</button>
+          <button class="btn primary" onclick="exception('route-resume')">Resume cleared route</button>
+          <div class="field"><label for="newtable">Change destination table</label><input id="newtable" type="number" min="1" value="3"></div>
+          <button class="btn secondary" onclick="changeTable()">Update table</button>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="section-head"><div><h3>Robot safety & system</h3><p>Update simulated telemetry and system state.</p></div></div>
+        <form id="batteryForm" class="form-grid">
+          <div class="field"><label for="battery">Battery percentage</label><input id="battery" type="number" min="0" max="100" value="100" required></div>
+          <div class="field" style="display:flex;align-items:end"><button class="btn primary" style="width:100%" type="submit">Update battery</button></div>
+        </form>
+        <p class="helper">Below 20%, new tasks and dispatch are blocked by the backend.</p>
+        <button class="btn danger wide" onclick="outage()">⚠ Simulate system outage / safe stop</button>
+        <button class="btn secondary wide" onclick="recover()">Recover system</button>
+      </section>
+    </div>
+  </section>
+  <section class="view" id="view-events">
+    <section class="panel"><div class="section-head"><div><h3>Latest API response</h3><p>Inspect backend responses and errors.</p></div><button class="btn secondary" onclick="clearResponse()">Clear</button></div><pre id="response">No response yet</pre></section>
+  </section>
+  <div class="footer">NIA Operations · FastAPI + SQLite · Simulation mode · POS/KDS and physical robot integration pending</div>
+</main>
+</div>
+<script>
+const API='http://127.0.0.1:8000';
+let latestDeliveries=[];
+let lastRobot=null;
+let messageTimer=null;
+
+function el(id){return document.getElementById(id)}
+function show(d){el('response').textContent=JSON.stringify(d,null,2)}
+function clearResponse(){el('response').textContent='No response yet'}
+function msg(text,err=false){
+  const e=el('message');e.textContent=text;e.className='notice show'+(err?' err':'');
+  if(messageTimer)clearTimeout(messageTimer);
+  messageTimer=setTimeout(()=>e.classList.remove('show'),7000);
+}
+async function api(path,method='GET',body=null){
+  const options={method,headers:{'Content-Type':'application/json'}};
+  if(body!==null)options.body=JSON.stringify(body);
+  let response;
+  try{response=await fetch(API+path,options)}
+  catch(_){throw Error('Cannot reach backend. Start Uvicorn in the backend folder.')}
+  let data;
+  try{data=await response.json()}catch(_){data={detail:'Backend returned an unreadable response'}}
+  show(data);
+  if(!response.ok)throw Error(data.detail||'API request failed');
+  return data;
+}
+function navigate(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+  const titles={overview:'Operations overview',deliveries:'Delivery queue & history',controls:'Robot controls',events:'API response'};
+  document.querySelector('.page-title').textContent=titles[view]||'NIA Operations';
+}
+document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.view)));
+function pretty(s){return String(s??'—').replaceAll('_',' ')}
+function pillClass(status){
+  if(['completed','docked','handoff_confirmed'].includes(status))return 'pill completed';
+  if(['cancelled','route_blocked','system_outage','low_battery'].includes(status))return 'pill error';
+  if(['task_created','awaiting_food_loading','food_loaded','en_route_to_table','arrived_at_table','going_to_kitchen','going_to_table','returning_to_staging'].includes(status))return 'pill active';
+  return 'pill';
+}
+function dateText(value){
+  if(!value)return '—';
+  const d=new Date(value);return Number.isNaN(d.getTime())?String(value):d.toLocaleString();
+}
+const nextActions = {
+  task_created: {stage:0,title:'Confirm kitchen arrival',hint:'Confirm that NIA has reached the kitchen pickup point.',label:'Arrived at kitchen',action:'pickup-arrived'},
+  awaiting_food_loading: {stage:1,title:'Confirm food loaded',hint:'Kitchen staff should load the order and confirm pickup.',label:'Confirm food loaded',action:'pickup-confirm'},
+  food_loaded: {stage:2,title:'Dispatch to table',hint:'Food is loaded. Start the simulated trip to the assigned table.',label:'Dispatch to table',action:'dispatch'},
+  en_route_to_table: {stage:2,title:'Confirm table arrival',hint:'When the simulated robot reaches the table, confirm arrival.',label:'Arrived at table',action:'arrive'},
+  arrived_at_table: {stage:3,title:'Confirm handoff',hint:'The server confirms that the food has been handed over.',label:'Confirm handoff',action:'handoff'},
+  handoff_confirmed: {stage:4,title:'Record completion',hint:'Record delivery completion and the local KDS/POS event.',label:'Complete delivery',action:'station-confirm'},
+  completed: {stage:4,title:'Delivery completed',hint:'The delivery is complete. If another order is queued, NIA will proceed directly to the next kitchen pickup; otherwise it returns to staging.',label:'Return to staging',action:'return'},
+  returning_to_staging: {stage:4,title:'Confirm staging return',hint:'Confirm the simulated robot has returned to its staging station.',label:'Return to staging',action:'return'},
+  route_blocked: {stage:2,title:'Resolve blocked route',hint:'Review the route and use Robot Controls to resume only when clear.',label:'Open robot controls',action:'controls'},
+  queued: {stage:-1,title:'Waiting in queue',hint:'NIA is busy with another delivery. You can cancel this queued task from the delivery list.',label:'Waiting for robot',action:''},
+  cancelled: {stage:-1,title:'Delivery cancelled',hint:'This task was cancelled before departure. Select another delivery.',label:'Select delivery',action:''}
+};
+function updateWorkflow(){
+  const id=Number(el('did').value);
+  const d=latestDeliveries.find(x=>x.delivery_id===id);
+  const button=el('nextActionButton');
+  document.querySelectorAll('.progress-node').forEach(n=>n.classList.remove('active','done'));
+  if(!d){
+    el('nextActionTitle').textContent='Select a valid delivery';
+    el('nextActionHint').textContent='Choose an existing delivery ID from the queue.';
+    button.textContent='Select delivery';button.disabled=true;button.dataset.action='';
+    return;
+  }
+  let cfg=nextActions[d.status]||{stage:-1,title:'Review delivery status',hint:'This status has no automatic next action. Check the delivery history.',label:'No action available',action:''};
+  if(d.status==='completed' && lastRobot && lastRobot.current_delivery_id!==null && lastRobot.current_delivery_id!==undefined && lastRobot.current_delivery_id!==d.delivery_id){
+    cfg={stage:4,title:'Next delivery assigned',hint:`NIA is continuing directly to delivery #${lastRobot.current_delivery_id}; it will not return to the dock between orders.`,label:'Next delivery in progress',action:''};
+  }
+  document.querySelectorAll('.progress-node').forEach(n=>{
+    const stage=Number(n.dataset.stage);
+    if(cfg.stage>=0&&stage<cfg.stage)n.classList.add('done');
+    else if(stage===cfg.stage)n.classList.add('active');
+  });
+  el('nextActionTitle').textContent=cfg.title;
+  el('nextActionHint').textContent=`${cfg.hint}  Current status: ${pretty(d.status)}.`;
+  button.textContent=cfg.label;button.dataset.action=cfg.action;button.disabled=!cfg.action;
+}
+async function runNextAction(){
+  const action=el('nextActionButton').dataset.action;
+  if(!action)return;
+  if(action==='return'){await returned();return}
+  if(action==='controls'){navigate('controls');msg('Open Robot Controls to review the blocked route.');return}
+  await act(action);
+}
+function renderDelivery(d){
+  const card=document.createElement('article');card.className='delivery-card';
+  const top=document.createElement('div');top.className='delivery-top';
+  const heading=document.createElement('div');
+  const title=document.createElement('div');title.className='delivery-title';title.textContent=`#${d.delivery_id} · ${d.order_id} · Table ${d.table_number}`;
+  const sub=document.createElement('div');sub.className='delivery-sub';sub.textContent='Updated '+dateText(d.updated_at);
+  heading.append(title,sub);
+  const badge=document.createElement('span');badge.className=pillClass(d.status);badge.textContent=pretty(d.status).toUpperCase();
+  top.append(heading,badge);
+  const items=document.createElement('div');items.className='delivery-items';items.textContent=(d.items||[]).join(', ');
+  const foot=document.createElement('div');foot.className='delivery-foot';
+  const flags=document.createElement('span');flags.textContent=`Pickup ${d.pickup_confirmed?'✓':'—'}  ·  Arrival ${d.robot_arrived?'✓':'—'}  ·  Handoff ${d.customer_handoff_confirmed?'✓':'—'}  ·  Complete ${d.station_confirmed?'✓':'—'}`;
+  const select=document.createElement('button');select.className='btn secondary';select.textContent='Select task';
+  select.addEventListener('click',()=>{el('did').value=d.delivery_id;el('eid').value=d.delivery_id;msg(`Selected delivery #${d.delivery_id}`);navigate('overview')});
+  const history=document.createElement('button');history.className='btn secondary';history.textContent='View history';
+  history.addEventListener('click',async()=>{el('did').value=d.delivery_id;el('eid').value=d.delivery_id;navigate('deliveries');await showDeliveryHistory(d.delivery_id)});
+  const cancelBtn=document.createElement('button');cancelBtn.className='btn danger';cancelBtn.textContent='Cancel queued order';
+  cancelBtn.hidden=d.status!=='queued';
+  cancelBtn.addEventListener('click',async()=>{
+    if(!confirm(`Cancel queued delivery #${d.delivery_id}? This will not interrupt the active robot task.`))return;
+    try{const result=await api(`/deliveries/${d.delivery_id}/cancel`,'POST',{notes:'Cancelled by staff while queued'});msg(result.message);await refresh();await showDeliveryHistory(d.delivery_id)}catch(e){msg(e.message,true)}
+  });
+  foot.append(flags,history,cancelBtn,select);card.append(top,items,foot);return card;
+}
+function renderList(containerId,list,limit=null){
+  const root=el(containerId);root.replaceChildren();
+  const rows=limit?list.slice(0,limit):list;
+  if(!rows.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='No deliveries yet. Send a KDS Food Ready event to create the first task.';root.append(empty);return}
+  rows.forEach(d=>root.append(renderDelivery(d)));updateWorkflow();
+}
+async function showDeliveryHistory(id){
+  const root=el('selectedHistory');if(!root)return;
+  try{
+    const data=await api(`/deliveries/${id}/history`);
+    root.replaceChildren();
+    if(!data.events.length){root.textContent='No events recorded yet.';return}
+    data.events.forEach(e=>{
+      const item=document.createElement('div');item.className='delivery-card';
+      const name=document.createElement('strong');name.textContent=pretty(e.event);
+      const meta=document.createElement('div');meta.className='delivery-sub';meta.textContent=dateText(e.created_at);
+      const notes=document.createElement('div');notes.className='delivery-items';notes.textContent=e.notes||'';
+      item.append(name,meta,notes);root.append(item);
+    });
+  }catch(e){root.textContent=e.message}
+}
+async function loadDeliveries(){
+  try{
+    const list=await api('/deliveries');latestDeliveries=Array.isArray(list)?list:[];
+    el('totalCount').textContent=latestDeliveries.length;
+    el('activeCount').textContent=latestDeliveries.filter(d=>!['completed','cancelled'].includes(d.status)).length;
+    el('completedCount').textContent=latestDeliveries.filter(d=>d.status==='completed').length;
+    renderList('recentDeliveries',latestDeliveries,4);renderList('allDeliveries',latestDeliveries);
+  }catch(e){
+    el('recentDeliveries').innerHTML='';el('allDeliveries').innerHTML='';
+    for(const id of ['recentDeliveries','allDeliveries']){const empty=document.createElement('div');empty.className='empty';empty.textContent=e.message;el(id).append(empty)}
+  }
+}
+async function refresh(){
+  try{
+    const r=await api('/robot');lastRobot=r;
+    el('connection').textContent='Backend connected';el('sideConnection').textContent='Backend connected';
+    el('topDot').classList.remove('off');el('sideDot').classList.remove('off');
+    el('robotStatus').textContent=pretty(r.status);el('robotId').textContent=r.robot_id||'NIA-01';
+    el('robotMeta').textContent=`${r.location||'Unknown location'} · Battery ${r.battery_percent}%`;
+    el('robotTask').textContent=r.current_delivery_id??'None';el('robotLocation').textContent=pretty(r.location);
+    el('robotUpdated').textContent=dateText(r.updated_at);
+    const battery=Math.max(0,Math.min(100,Number(r.battery_percent)||0));
+    el('batteryText').textContent=battery+'%';el('batteryMetric').textContent=battery+'%';
+    el('batteryNote').textContent=battery<20?'Low battery warning':battery<40?'Battery running low':'Battery level reported by backend';
+    el('batteryFill').style.width=battery+'%';el('batteryFill').style.background=battery<20?'#fb7185':battery<40?'#fbbf24':'linear-gradient(90deg,#2dd4bf,#7ee787)';
+    el('battery').value=battery;
+    const st=r.status||'unknown';el('robotPill').className='pill '+(['system_outage','route_blocked','low_battery'].includes(st)?'error':['going_to_kitchen','going_to_table','returning_to_staging','awaiting_handoff','awaiting_food_loading'].includes(st)?'active':'completed');
+    await loadDeliveries();
+  }catch(e){
+    el('connection').textContent='Backend disconnected';el('sideConnection').textContent='Backend disconnected';
+    el('topDot').classList.add('off');el('sideDot').classList.add('off');
+    el('robotStatus').textContent='Unavailable';el('robotMeta').textContent='Start the FastAPI backend to load robot status.';
+    msg(e.message,true);
+  }
+}
+async function ready(event){
+  if(event)event.preventDefault();
+  try{
+    const orderId=el('order').value.trim();
+    const items=el('items').value.split(',').map(x=>x.trim()).filter(Boolean);
+    const tableNumber=Number(el('table').value);
+    if(!orderId||!items.length||!Number.isInteger(tableNumber)||tableNumber<1)throw Error('Enter a valid order ID, table number and at least one food item.');
+    const d=await api('/kds/food-ready','POST',{order_id:orderId,table_number:tableNumber,items,source:'KDS'});
+    el('did').value=d.delivery.delivery_id;el('eid').value=d.delivery.delivery_id;
+    msg(d.message||'Food Ready event received.');
+    el('order').value='ORD-'+(1001+Date.now()%8999);
+    await refresh();
+  }catch(e){msg(e.message,true)}
+}
+async function act(action){
+  try{
+    const id=Number(el('did').value);if(!Number.isInteger(id)||id<1)throw Error('Enter a valid delivery ID.');
+    const d=await api(`/deliveries/${id}/${action}`,'POST');
+    msg(d.message||'Delivery action completed.');await refresh();
+  }catch(e){msg(e.message,true)}
+}
+async function returned(){
+  try{const d=await api('/robot/returned','POST');msg(d.message||'Robot returned to staging.');await refresh()}
+  catch(e){msg(e.message,true)}
+}
+async function exception(action){
+  try{
+    const id=Number(el('eid').value);if(!Number.isInteger(id)||id<1)throw Error('Enter a valid delivery ID.');
+    let body=null;if(action==='cancel'||action==='route-blocked')body={notes:el('notes').value.trim()||'Staff assistance required'};
+    const d=await api(`/deliveries/${id}/${action}`,'POST',body);
+    msg(d.message||'Exception action completed.');await refresh();
+  }catch(e){msg(e.message,true)}
+}
+async function changeTable(){
+  try{
+    const id=Number(el('eid').value),table=Number(el('newtable').value);
+    if(!Number.isInteger(id)||id<1||!Number.isInteger(table)||table<1)throw Error('Enter valid delivery and destination table numbers.');
+    const d=await api(`/deliveries/${id}/table-change`,'POST',{table_number:table});
+    msg(d.message||'Destination updated.');await refresh();
+  }catch(e){msg(e.message,true)}
+}
+async function setBattery(event){
+  if(event)event.preventDefault();
+  try{
+    const battery=Number(el('battery').value);
+    if(!Number.isInteger(battery)||battery<0||battery>100)throw Error('Battery must be a whole number from 0 to 100.');
+    const d=await api('/robot/battery','POST',{battery_percent:battery});
+    msg('Battery updated: '+d.battery_percent+'%.');await refresh();
+  }catch(e){msg(e.message,true)}
+}
+async function outage(){
+  try{const d=await api('/system/outage','POST',{notes:el('notes').value.trim()||'Staff assistance required'});msg(d.message||'System outage recorded.',true);await refresh()}
+  catch(e){msg(e.message,true)}
+}
+async function recover(){
+  try{const d=await api('/system/recover','POST');msg(d.message||'System recovery recorded.');await refresh()}
+  catch(e){msg(e.message,true)}
+}
+el('did').addEventListener('input',updateWorkflow);
+el('readyForm').addEventListener('submit',ready);
+el('batteryForm').addEventListener('submit',setBattery);
+refresh();
+setInterval(refresh,15000);
+</script>
+</body>
+</html>
