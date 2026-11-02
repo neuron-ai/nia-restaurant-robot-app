@@ -1,100 +1,111 @@
-# NIA Restaurant Robot App
+# NIA Restaurant Robot App — Version 2
 
-**Restaurant Robot Operations Dashboard — FastAPI, React Native, Expo, and SQLite**
+**Restaurant Delivery Management Application**
 
-NIA is a prototype restaurant robot operations application designed to coordinate food-delivery tasks between restaurant staff, a robot, and customer tables. It provides a backend API, a web dashboard, and a React Native mobile application.
+**Technology Stack:** Python · FastAPI · SQLite · React Native · TypeScript · Expo
 
-The project is structured to support an integration-first approach: restaurant staff can manage delivery tasks through the application, while a future robot integration can connect task execution to ROS 2 navigation and the physical robot.
+NIA is a restaurant delivery management application designed to coordinate food-delivery workflows between restaurant staff and a robot through a centralized application.
+
+Version 2 provides a FastAPI backend, SQLite database, and React Native mobile application. Restaurant staff can create and manage delivery tasks, assign tables and trays, process single or multiple deliveries, monitor robot status, and track delivery progress through the application.
+
+The current implementation provides an application-level delivery workflow. Robot movement and delivery execution are simulated through backend status updates.
 
 ---
 
 ## Table of Contents
 
-1. [Project Overview](#1-project-overview)
-2. [Features](#2-features)
-3. [Technology Stack](#3-technology-stack)
-4. [Project Structure](#4-project-structure)
-5. [System Architecture](#5-system-architecture)
-6. [Restaurant Delivery Workflow](#6-restaurant-delivery-workflow)
-7. [Backend Architecture](#7-backend-architecture)
-8. [API Reference](#8-api-reference)
-9. [Prerequisites](#9-prerequisites)
-10. [Clone the Repository](#10-clone-the-repository)
-11. [Run the Backend](#11-run-the-backend)
-12. [Run the Web Dashboard](#12-run-the-web-dashboard)
-13. [Run the Mobile Application](#13-run-the-mobile-application)
-14. [Connect the Frontend to the Backend](#14-connect-the-frontend-to-the-backend)
-15. [Test the API](#15-test-the-api)
-16. [Database and Data Storage](#16-database-and-data-storage)
-17. [Robot Integration Roadmap](#17-robot-integration-roadmap)
-18. [Troubleshooting](#18-troubleshooting)
-19. [Security Considerations](#19-security-considerations)
-20. [Development Guidelines](#20-development-guidelines)
-21. [Contributing](#21-contributing)
+1. Project Overview
+2. Features
+3. Technology Stack
+4. Project Structure
+5. Application Architecture
+6. Frontend–Backend Communication
+7. Application Workflow
+8. Single and Multi-Delivery Management
+9. Backend Architecture
+10. Database Architecture
+11. API Reference
+12. Mobile Application
+13. Backend Setup
+14. Mobile Application Setup
+15. Frontend Configuration
+16. API Testing
+17. Development Guidelines
+18. Current Implementation Status
 
 ---
 
 ## 1. Project Overview
 
-NIA is intended to support restaurant delivery operations using a robot-assisted workflow.
+NIA is designed to simplify restaurant food-delivery task management through a centralized application.
 
-The application separates the system into three main parts:
+The application consists of three main components:
 
-- **Backend:** A FastAPI service that exposes REST endpoints for robot status and delivery management.
-- **Web dashboard:** A browser-based interface for interacting with restaurant delivery operations.
-- **Mobile application:** A React Native application built with Expo for accessing the NIA interface on supported platforms.
+- **Mobile Application:** React Native and Expo interface for restaurant staff.
+- **Backend:** Python FastAPI service for delivery management and application operations.
+- **Database:** SQLite database for storing delivery information, robot status, batches, and event history.
 
-SQLite is used for local data storage where configured by the backend. The project is currently a prototype; real robot movement, navigation, and restaurant POS/KDS integrations must be configured and validated separately.
+### Project Objectives
 
-### Project goals
-
-- Create and track restaurant delivery tasks.
-- Manage delivery status transitions.
-- Provide an interface for restaurant staff.
-- Separate application logic from robot-control logic.
-- Prepare the software architecture for future ROS 2 integration.
-- Allow developers to install and run the project locally.
+- Manage restaurant delivery tasks.
+- Create single and multiple delivery requests.
+- Assign delivery tasks to restaurant tables.
+- Manage food trays for different orders.
+- Monitor robot availability and battery status.
+- Maintain delivery queues.
+- Track delivery status and event history.
+- Provide a mobile interface for restaurant staff.
+- Maintain persistent application data.
 
 ---
 
 ## 2. Features
 
-### Backend
+### Backend Features
 
 - FastAPI REST API.
+- Request validation using Pydantic.
+- SQLite database integration.
+- Delivery creation and management.
+- Single and multi-delivery batch processing.
+- Table and tray assignment.
+- Robot status management.
+- Delivery queue management.
+- Delivery event history.
+- Delivery cancellation.
+- Route-blocked and recovery workflow simulation.
+- Battery status management.
 - Automatic API documentation.
-- Robot status endpoint.
-- Delivery creation and retrieval.
-- Delivery loading, dispatch, and arrival operations.
-- Delivery workflow status tracking.
-- SQLite/SQLAlchemy dependencies for database-backed development.
 
-### Web dashboard
+### Mobile Application Features
 
-- Browser-based restaurant operations interface.
-- Frontend-to-backend integration through HTTP requests.
-- Delivery task interaction through the web interface.
+- Admin and Staff interfaces.
+- Robot overview dashboard.
+- Robot status and battery display.
+- Delivery management.
+- Single-delivery creation.
+- Multi-delivery creation.
+- Table selection.
+- Tray assignment.
+- Delivery workflow controls.
+- Delivery history and API response display.
+- Connection status monitoring.
+- Automatic data refresh.
 
-### Mobile application
+### Version 2 Improvements
 
-- React Native application using Expo.
-- TypeScript-based application code.
-- Expo configuration and assets.
-- Shared API integration for supported app workflows.
-
-### Current implementation status
-
-| Component | Status |
+| Feature | Description |
 |---|---|
-| FastAPI backend | Implemented prototype |
-| REST API documentation | Available through FastAPI |
-| Web dashboard | Included in the repository |
-| Expo mobile app | Included in the repository |
-| Local persistence | Must be verified against the configured backend implementation |
-| Live robot navigation | Not yet integrated end to end |
-| Physical robot control | Not yet integrated end to end |
-| Production authentication | Requires implementation and verification |
-| POS/KDS integration | Not yet confirmed |
+| Delivery management | Improved delivery creation and tracking |
+| Multi-delivery | Support for multiple delivery tasks in one batch |
+| Tray management | Assign individual trays to delivery tasks |
+| Table management | Assign destination tables |
+| Validation | Validate duplicate tables and trays within a batch |
+| Queue management | Manage pending delivery tasks |
+| Event history | Maintain delivery action history |
+| Database | Persistent SQLite storage |
+| Mobile UI | Updated React Native application |
+| Android configuration | Added Expo network configuration plugin |
 
 ---
 
@@ -104,25 +115,20 @@ SQLite is used for local data storage where configured by the backend. The proje
 |---|---|
 | Python | Backend programming |
 | FastAPI | REST API framework |
-| Uvicorn | ASGI development server |
-| Pydantic | Request validation and data models |
-| SQLAlchemy | Database toolkit/ORM dependency |
-| SQLite | Local database option |
-| HTML, CSS, JavaScript | Web dashboard |
+| Uvicorn | Backend server |
+| Pydantic | Request validation |
+| SQLite | Database |
 | React Native | Mobile application |
-| TypeScript | Mobile application programming |
-| Expo | Mobile development and testing |
-| Git and GitHub | Version control and collaboration |
-| ROS 2 | Planned robot middleware integration |
-| Nav2 / SLAM | Potential navigation and mapping integration |
-
-**Note:** A library being installed does not mean every feature is already connected. Confirm the implementation in the source code before relying on a technology for production functionality.
+| TypeScript | Frontend programming |
+| Expo | Mobile development framework |
+| Expo Router | Application navigation |
+| JavaScript Fetch API | Frontend–backend communication |
+| Git | Version control |
+| GitHub | Source code management |
 
 ---
 
 ## 4. Project Structure
-
-The repository is organized as follows:
 
 ```text
 nia-restaurant-robot-app/
@@ -132,897 +138,912 @@ nia-restaurant-robot-app/
 │
 ├── backend/
 │   ├── main.py
-│   └── requirements.txt
+│   ├── requirements.txt
+│   └── nia.db
 │
 ├── frontend/
 │   └── index.html
 │
 └── nia-mobile/
-    ├── .gitignore
     ├── app.json
     ├── eas.json
     ├── package.json
     ├── package-lock.json
-    ├── tsconfig.json
+    │
+    ├── plugins/
+    │   └── withCleartextNetwork.js
+    │
     ├── assets/
     ├── scripts/
+    │
     └── src/
-        ├── app/
-        │   ├── _layout.tsx
-        │   ├── index.tsx
-        │   └── explore.tsx
-        ├── components/
-        ├── constants/
-        ├── hooks/
-        └── global.css
+        └── app/
+            ├── _layout.tsx
+            └── index.tsx
 ```
 
-### Important files
+Additional folders and configuration files may be present in the repository.
+
+### Important Files
 
 **`backend/main.py`**
 
-Contains the FastAPI application, data models, robot status handling, delivery operations, and API routes.
+Contains the FastAPI application, API endpoints, request models, database operations, delivery workflow, and robot status management.
 
 **`backend/requirements.txt`**
 
-Lists Python dependencies required by the backend.
-
-**`frontend/index.html`**
-
-Contains the web dashboard interface and its client-side logic.
+Contains Python dependencies required to run the backend.
 
 **`nia-mobile/src/app/index.tsx`**
 
-Contains the main mobile application screen and its UI/workflow logic.
-
-**`nia-mobile/src/app/_layout.tsx`**
-
-Defines the Expo Router application layout.
-
-**`nia-mobile/package.json`**
-
-Defines mobile dependencies and available npm scripts.
+Contains the main mobile application interface, delivery forms, batch management, API communication, and workflow actions.
 
 **`nia-mobile/app.json`**
 
 Contains Expo application configuration.
 
-**`.gitignore`**
+**`nia-mobile/eas.json`**
 
-Excludes local environments, generated files, databases, and other files that should not normally be committed.
+Contains Expo Application Services build configuration.
+
+**`nia-mobile/package.json`**
+
+Defines mobile application dependencies and scripts.
+
+**`nia-mobile/package-lock.json`**
+
+Maintains the locked versions of installed Node.js dependencies.
+
+**`nia-mobile/plugins/withCleartextNetwork.js`**
+
+Contains the custom Expo configuration plugin for Android network settings.
 
 ---
 
-## 5. System Architecture
+## 5. Application Architecture
 
-The current application follows a client-server structure.
+NIA follows a client-server architecture.
+
+### Architecture Diagram
 
 ```text
-       Restaurant Staff
-              |
-       +------+------+
-       |             |
-       v             v
-  Web Dashboard   Mobile App
-       |             |
-       +------+------+
-              |
-          HTTP / REST
-              |
-              v
-       FastAPI Backend
-              |
-       +------+------+
-       |             |
-       v             v
- Delivery Logic   Robot Status
-       |
-       v
- Local Data Storage
- (according to backend configuration)
+             RESTAURANT STAFF
+                    |
+                    v
+          REACT NATIVE / EXPO
+              MOBILE APP
+                    |
+                    |
+             HTTP REQUEST
+                JSON
+                    |
+                    v
+             FASTAPI BACKEND
+                    |
+          +---------+----------+
+          |         |          |
+          v         v          v
+       Delivery   Robot      Event
+       Manager    Manager    Manager
+          |         |          |
+          +---------+----------+
+                    |
+                    v
+                SQLITE DB
+                 nia.db
 ```
 
-### How the components communicate
+### Component Responsibilities
 
-1. A staff member opens the web dashboard or mobile application.
-2. The interface sends an HTTP request to the backend.
-3. FastAPI validates the request and executes the corresponding endpoint.
-4. The backend returns a JSON response.
-5. The frontend updates the displayed delivery or robot status.
+**Mobile Application**
 
-The backend is the application API. The frontend does not directly control a physical robot simply by changing a delivery status.
+- Displays application information.
+- Creates delivery requests.
+- Manages single and multiple deliveries.
+- Assigns tables and trays.
+- Sends delivery actions to the backend.
+- Displays robot and delivery information.
 
-### Future robot architecture
+**Backend**
+
+- Receives frontend API requests.
+- Validates request data.
+- Creates delivery records.
+- Manages delivery batches.
+- Maintains robot application status.
+- Processes delivery workflow transitions.
+- Manages pending delivery tasks.
+- Stores event history.
+- Returns JSON responses.
+
+**Database**
+
+- Stores delivery information.
+- Maintains batch records.
+- Stores robot state.
+- Maintains delivery event history.
+
+---
+
+## 6. Frontend–Backend Communication
+
+The React Native mobile application communicates with the FastAPI backend using HTTP requests and JSON data.
+
+### Communication Flow
 
 ```text
-Web / Mobile Application
-           |
-           v
-      FastAPI API
-           |
-           v
- Robot Integration Layer
-           |
-           v
-          ROS 2
-           |
-      +----+----+
-      |         |
-      v         v
-    Nav2     Robot Drivers
-      |         |
-      +----+----+
-           |
-           v
-   Physical Robot
+       USER ACTION
+            |
+            v
+     REACT NATIVE UI
+            |
+            v
+     FRONTEND HANDLER
+            |
+            v
+       API HELPER
+            |
+            v
+    JAVASCRIPT FETCH()
+            |
+            |
+       HTTP + JSON
+            |
+            v
+      FASTAPI BACKEND
+            |
+            v
+    PYDANTIC VALIDATION
+            |
+            v
+     BUSINESS LOGIC
+            |
+            v
+      SQLITE DATABASE
+            |
+            v
+       JSON RESPONSE
+            |
+            v
+    FRONTEND STATE UPDATE
+            |
+            v
+       UPDATED UI
 ```
 
-This second diagram represents the planned integration direction, not a claim that the complete ROS 2 connection already exists.
+### API Configuration
+
+The mobile application reads its backend URL from:
+
+```text
+EXPO_PUBLIC_API_URL
+```
+
+The frontend request helper:
+
+1. Receives an API endpoint.
+2. Prepares the HTTP method and headers.
+3. Converts request data into JSON.
+4. Sends the request using `fetch()`.
+5. Parses the backend JSON response.
+6. Handles unsuccessful HTTP responses.
+7. Returns the response to the application.
+
+### Example: Refresh Application Data
+
+```text
+Refresh Button
+      |
+      v
+   refresh()
+      |
+      +------------------+
+      |                  |
+      v                  v
+  GET /robot       GET /deliveries
+      |                  |
+      +---------+--------+
+                |
+                v
+          JSON Responses
+                |
+                v
+        Update Application
+                |
+                v
+          Refresh UI
+```
+
+The application uses `Promise.all()` to retrieve robot and delivery information concurrently.
+
+The mobile application also performs periodic refreshes.
+
+### Example: Creating a Delivery
+
+```text
+Staff Enters Order Details
+             |
+             v
+     Frontend Validation
+             |
+             v
+    POST /kds/food-ready
+             |
+             v
+      FastAPI Backend
+             |
+             v
+       Request Validation
+             |
+             v
+      Create Delivery
+             |
+             v
+       Save to SQLite
+             |
+             v
+      JSON Response
+             |
+             v
+       Refresh Mobile UI
+```
 
 ---
 
-## 6. Restaurant Delivery Workflow
+## 7. Application Workflow
 
-The intended restaurant delivery workflow is:
+The application supports the following restaurant delivery workflow:
 
-### Step 1 — Robot waits at the docking station
+1. Robot is displayed at the staging/docking station.
+2. Staff enters or selects an order.
+3. Staff submits a food-ready delivery request.
+4. Backend validates the request.
+5. Backend creates a delivery task.
+6. The task is assigned or queued based on application state.
+7. Staff confirms kitchen pickup arrival.
+8. Staff confirms food loading.
+9. Staff dispatches the delivery.
+10. Staff records arrival at the destination.
+11. Staff confirms customer handover.
+12. Staff confirms completion.
+13. The backend updates the delivery and robot application status.
+14. The next queued delivery can be assigned, or the robot can enter the return-to-staging state.
 
-The robot is available for a new delivery task.
+### Delivery Status Sequence
 
-### Step 2 — Kitchen marks an order ready
+```text
+       ORDER READY
+            |
+            v
+       TASK CREATED
+            |
+            v
+   AWAITING FOOD LOADING
+            |
+            v
+        FOOD LOADED
+            |
+            v
+     EN ROUTE TO TABLE
+            |
+            v
+      ARRIVED AT TABLE
+            |
+            v
+    HANDOFF CONFIRMED
+            |
+            v
+        COMPLETED
+            |
+            v
+  RETURNING TO STAGING
+            |
+            v
+          DOCKED
+```
 
-A restaurant staff member selects a ready order and initiates a delivery task with the order ID, table number, and items.
-
-### Step 3 — Robot is assigned to the kitchen or dispatch station
-
-The application tracks the task and the intended delivery destination.
-
-### Step 4 — Food is loaded
-
-Restaurant staff place the order on the robot and confirm that it is loaded.
-
-### Step 5 — Delivery dispatch
-
-The task is marked for dispatch. In a fully integrated deployment, this step would also send a command to the robot integration layer.
-
-### Step 6 — Robot travels to the destination
-
-The intended destination is the customer table. Real navigation requires a configured robot, map, navigation stack, and validated control interface.
-
-### Step 7 — Arrival and customer handover
-
-The application records arrival. Restaurant staff or an appropriate confirmation mechanism verifies the handover.
-
-### Step 8 — Delivery completion
-
-The delivery status is updated and the robot can be assigned another task or return to its docking station.
-
-**Prototype limitation:** A backend status update is not proof that the physical robot has completed an action. Production integration must use actual robot feedback and handle failed, cancelled, or interrupted deliveries.
+**Note:** The above sequence represents the application's simulated workflow. It does not represent confirmed physical robot movement.
 
 ---
 
-## 7. Backend Architecture
+## 8. Single and Multi-Delivery Management
 
-The backend entry point is `backend/main.py`.
+Version 2 supports single and multi-delivery task creation.
 
-### Application startup
+### Single Delivery
 
-The backend uses FastAPI and Uvicorn.
+A single delivery contains one order, one destination table, food items, and an assigned tray.
 
-FastAPI provides:
+Example:
 
-- HTTP route definitions.
+```json
+{
+  "order_id": "ORD-1001",
+  "table_number": 5,
+  "items": [
+    "Burger",
+    "French Fries"
+  ],
+  "tray": "Tray 1"
+}
+```
+
+### Multi-Delivery
+
+A multi-delivery batch contains multiple individual delivery tasks.
+
+Example:
+
+```json
+{
+  "mode": "multi",
+  "items": [
+    {
+      "order_id": "ORD-2001",
+      "table_number": 1,
+      "items": ["Burger"],
+      "tray": "Tray 1"
+    },
+    {
+      "order_id": "ORD-2002",
+      "table_number": 5,
+      "items": ["Pasta"],
+      "tray": "Tray 3"
+    },
+    {
+      "order_id": "ORD-2003",
+      "table_number": 10,
+      "items": ["Pizza"],
+      "tray": "Tray 2"
+    }
+  ]
+}
+```
+
+### Validation Rules
+
+- Single mode requires exactly one delivery.
+- Multi mode requires at least two deliveries.
+- Order IDs are required.
+- Table numbers must be positive.
+- Food item lists cannot be empty.
+- Tray assignments must be valid.
+- Duplicate table assignments are rejected within a batch.
+- Duplicate tray assignments are rejected within a batch.
+- Batch creation checks robot availability and battery level.
+- The configured minimum battery requirement is 20%.
+
+### Batch Processing
+
+The backend creates the delivery batch and its associated delivery records.
+
+- The first delivery is activated.
+- Subsequent deliveries are queued.
+- After a delivery is completed, the next eligible delivery in the batch is activated.
+- After the batch is completed, the robot enters the return-to-staging workflow.
+
+---
+
+## 9. Backend Architecture
+
+The backend entry point is:
+
+```text
+backend/main.py
+```
+
+### Main Responsibilities
+
+- FastAPI application initialization.
+- Database initialization.
 - Request validation.
-- JSON responses.
-- Interactive OpenAPI documentation.
-- Error responses for invalid requests.
+- Delivery management.
+- Batch management.
+- Robot status management.
+- Queue processing.
+- Event history.
+- Delivery workflow validation.
+- Exception and recovery workflow handling.
 
-Uvicorn runs the FastAPI application as a local development server.
+### Important Backend Functions
 
-### Robot status model
+| Function | Responsibility |
+|---|---|
+| `connect()` | Opens SQLite database connection |
+| `init_db()` | Creates and migrates database tables |
+| `robot_row()` | Retrieves current robot information |
+| `set_robot()` | Updates robot application state |
+| `robot_json()` | Formats robot information |
+| `event()` | Records delivery events |
+| `delivery()` | Retrieves delivery details and history |
+| `require_delivery()` | Validates delivery status |
+| `active_robot()` | Checks current robot assignment |
+| `assign_next_queued()` | Assigns the next eligible queued delivery |
 
-The current prototype defines robot statuses such as:
+### Robot Status Management
 
-- `DOCKED`
-- `WAITING_FOR_ORDER`
-- `GOING_TO_STATION`
-- `LOADING_FOOD`
-- `GOING_TO_TABLE`
-- `AWAITING_CUSTOMER`
-- `RETURNING_TO_DOCK`
+The backend maintains:
 
-These statuses describe the intended operational lifecycle.
+- Robot ID.
+- Robot status.
+- Current delivery ID.
+- Robot location.
+- Battery percentage.
+- Updated timestamp.
 
-### Delivery status model
+### Delivery Status Management
 
-The prototype defines delivery statuses such as:
+The backend validates workflow transitions before updating delivery records.
 
-- `ORDER_READY`
-- `ASSIGNED`
-- `FOOD_LOADED`
-- `EN_ROUTE`
-- `ARRIVED`
-- `DELIVERED_BY_ROBOT`
-- `CONFIRMED_BY_STATION`
-- `COMPLETED`
-
-Use the exact status values accepted by the current backend when making API requests. Not every transition is necessarily enforced as a strict state machine yet.
-
-### Development data
-
-The original prototype includes in-memory Python data structures for robot and delivery state. SQLAlchemy and SQLite dependencies are present in the project, but their presence alone does not establish that every endpoint persists data to SQLite.
-
-Verify the actual database implementation before assuming that deliveries survive server restarts.
+For example, dispatching a delivery is allowed only after the food-loading confirmation and other required checks.
 
 ---
 
-## 8. API Reference
+## 10. Database Architecture
 
-The backend exposes the following routes in the prototype.
+NIA Version 2 uses SQLite for application data persistence.
 
-Base URL for local development:
+Database file:
+
+```text
+backend/nia.db
+```
+
+### Database Tables
+
+| Table | Purpose |
+|---|---|
+| `deliveries` | Stores individual delivery tasks |
+| `delivery_batches` | Stores delivery batch information |
+| `events` | Stores delivery events and status history |
+| `robot` | Stores current robot application state |
+
+### Deliveries Table
+
+Maintains:
+
+- Delivery ID.
+- Order ID.
+- Event ID.
+- Batch ID.
+- Tray number.
+- Table number.
+- Food items.
+- Delivery status.
+- Confirmation flags.
+- Exception information.
+- Creation and update timestamps.
+
+### Delivery Batches Table
+
+Groups individual delivery tasks and maintains batch status and timestamps.
+
+### Events Table
+
+Stores delivery actions and status changes with timestamps.
+
+### Robot Table
+
+Stores the current robot status, location, battery percentage, and active delivery assignment.
+
+### Idempotency
+
+The `/kds/food-ready` endpoint uses `event_id` to identify repeated requests.
+
+If the same event is received again, the backend can return the existing task instead of creating a duplicate delivery.
+
+### Database Initialization
+
+The backend initializes and migrates the required database schema during application startup.
+
+---
+
+## 11. API Reference
+
+### Base URL
+
+Local development:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-| Method | Endpoint | Purpose |
+### General Endpoints
+
+| Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/` | Basic application response |
-| `GET` | `/health` | Health check |
-| `GET` | `/robot` | Retrieve robot state |
-| `POST` | `/deliveries` | Create a delivery task |
-| `GET` | `/deliveries` | List deliveries |
-| `GET` | `/deliveries/{delivery_id}` | Retrieve a delivery |
-| `POST` | `/deliveries/{delivery_id}/load` | Mark food as loaded |
-| `POST` | `/deliveries/{delivery_id}/dispatch` | Dispatch a delivery |
-| `POST` | `/deliveries/{delivery_id}/arrive` | Record arrival |
+| GET | `/` | Application information |
+| GET | `/health` | Backend health status |
+| GET | `/robot` | Retrieve robot status |
+| GET | `/deliveries` | Retrieve all deliveries |
+| GET | `/deliveries/{did}` | Retrieve a specific delivery |
+| GET | `/deliveries/{did}/history` | Retrieve delivery history |
+| GET | `/history` | Retrieve recent global events |
+| GET | `/queue` | Retrieve queued delivery information |
+| GET | `/batches` | Retrieve delivery batches |
 
-The exact accepted request fields and response schemas are defined by the running backend's OpenAPI specification.
+### Delivery Creation
 
-### Create a delivery
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/kds/food-ready` | Create a delivery from a food-ready event |
+| POST | `/batches` | Create a single or multi-delivery batch |
 
-Example request:
+### Delivery Workflow Endpoints
 
-```http
-POST /deliveries
-Content-Type: application/json
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/deliveries/{did}/pickup-arrived` | Confirm kitchen pickup arrival |
+| POST | `/deliveries/{did}/pickup-confirm` | Confirm food loading |
+| POST | `/deliveries/{did}/dispatch` | Dispatch delivery |
+| POST | `/deliveries/{did}/arrive` | Record table arrival |
+| POST | `/deliveries/{did}/handoff` | Confirm customer handover |
+| POST | `/deliveries/{did}/station-confirm` | Confirm delivery completion |
+| POST | `/deliveries/{did}/table-change` | Change destination table |
+| POST | `/deliveries/{did}/cancel` | Cancel a delivery |
+| POST | `/deliveries/{did}/route-blocked` | Record a blocked route |
+| POST | `/deliveries/{did}/route-resume` | Resume the simulated route workflow |
+
+### Robot and System Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/robot/returned` | Confirm return to staging |
+| POST | `/robot/battery` | Update battery percentage |
+| POST | `/system/outage` | Record a simulated system outage |
+| POST | `/system/recover` | Recover from simulated outage |
+| POST | `/ui-actions` | Record a frontend UI action |
+
+### API Documentation
+
+FastAPI automatically provides interactive API documentation.
+
+Swagger UI:
+
+```text
+http://127.0.0.1:8000/docs
 ```
 
-```json
-{
-  "table_number": 5,
-  "order_id": "ORD-1001",
-  "items": [
-    "Veg Burger",
-    "French Fries",
-    "Orange Juice"
-  ]
-}
+OpenAPI JSON:
+
+```text
+http://127.0.0.1:8000/openapi.json
 ```
 
-The backend's `CreateDelivery` model defines a positive table number, an order ID, and a list of item names.
-
-Example response:
-
-```json
-{
-  "delivery_id": 1,
-  "table_number": 5,
-  "order_id": "ORD-1001",
-  "items": [
-    "Veg Burger",
-    "French Fries",
-    "Orange Juice"
-  ]
-}
-```
-
-The exact response fields may differ from this illustrative example. Check `/docs` for the live response schema.
-
-### Get robot status
-
-```http
-GET /robot
-```
-
-This endpoint returns the robot state maintained by the backend.
-
-### List deliveries
-
-```http
-GET /deliveries
-```
-
-Returns the delivery records available to the backend.
-
-### Load food
-
-```http
-POST /deliveries/1/load
-```
-
-Marks the specified delivery's food-loading step. Check `/docs` to determine whether the endpoint requires a request body.
-
-### Dispatch delivery
-
-```http
-POST /deliveries/1/dispatch
-```
-
-Requests the delivery dispatch operation.
-
-### Record arrival
-
-```http
-POST /deliveries/1/arrive
-```
-
-Records arrival for the specified delivery.
-
-### Interactive API documentation
-
-After starting the backend, open:
-
-- Swagger UI: `http://127.0.0.1:8000/docs`
-- OpenAPI schema: `http://127.0.0.1:8000/openapi.json`
-
-The running API documentation is the authoritative reference for request and response schemas.
+Use Swagger UI to inspect request bodies, response schemas, and test API endpoints.
 
 ---
 
-## 9. Prerequisites
+## 12. Mobile Application
 
-Install the following tools on your development machine.
+The NIA mobile application is built using React Native, TypeScript, Expo, and Expo Router.
 
-### Backend
+### Application Screens
 
-- Python 3.10 or another Python version compatible with the project's dependencies.
+**Login**
+
+Provides the Admin and Staff demo login interface.
+
+**Overview**
+
+Displays:
+
+- Robot readiness.
+- Battery percentage.
+- Robot status.
+- Current location.
+- Active deliveries.
+- Queued deliveries.
+- Last refresh time.
+
+**Deliveries**
+
+Displays delivery records retrieved from the backend.
+
+**Robot Controls**
+
+Provides application-level controls for robot status, battery updates, refresh, and simulated outage/recovery operations.
+
+**User Workflow**
+
+Provides:
+
+- Single-delivery creation.
+- Multi-delivery creation.
+- Table selection.
+- Tray assignment.
+- Pickup confirmation.
+- Food-loading confirmation.
+- Delivery dispatch.
+- Arrival confirmation.
+- Handover confirmation.
+- Delivery completion.
+- Table changes and cancellation where allowed.
+
+**API Events**
+
+Displays the latest API response or error information for application debugging.
+
+### Important Frontend Functions
+
+| Function | Description |
+|---|---|
+| `request()` | Sends HTTP requests |
+| `api()` | Handles API calls and response storage |
+| `refresh()` | Refreshes robot and delivery information |
+| `runAction()` | Executes application workflow actions |
+| `createDelivery()` | Creates a single delivery |
+| `createBatch()` | Creates multiple delivery tasks |
+| `deliveryAction()` | Executes delivery actions |
+| `updateTable()` | Changes the delivery destination |
+| `updateBattery()` | Updates simulated battery percentage |
+| `signIn()` | Handles demo login |
+| `signOut()` | Handles logout |
+
+---
+
+## 13. Backend Setup
+
+### Prerequisites
+
+- Python 3.10 or compatible version.
 - pip.
 - Git.
 
-### Web frontend
-
-- A modern browser.
-- A local HTTP server or suitable development environment if required by the frontend implementation.
-
-### Mobile application
-
-- Node.js LTS.
-- npm.
-- Expo tooling through `npx expo`.
-- Expo Go for compatible physical-device testing, or an appropriate emulator/development build.
-
-### Operating system
-
-The following instructions primarily use Windows CMD. The same project can be adapted for Linux or macOS with their respective environment activation commands.
-
----
-
-## 10. Clone the Repository
-
-Open CMD, PowerShell, or a terminal.
-
-Navigate to the folder where you want the project:
-
-```bash
-cd path/to/your/workspace
-```
-
-Clone the repository:
+### Clone Repository
 
 ```bash
 git clone https://github.com/neuron-ai/nia-restaurant-robot-app.git
 ```
 
-Enter the project:
-
 ```bash
 cd nia-restaurant-robot-app
 ```
 
-Verify the directory:
-
-```bash
-git status
-```
-
-The root directory should contain:
-
-```text
-README.md
-.gitignore
-backend/
-frontend/
-nia-mobile/
-```
-
-### If you already cloned the project
-
-Navigate to the existing repository and update it:
-
-```bash
-git pull origin main
-```
-
-If you have local changes, commit or otherwise preserve them before pulling.
-
----
-
-## 11. Run the Backend
-
-### Step 1 — Open a terminal in the project root
-
-```bash
-cd nia-restaurant-robot-app
-```
-
-### Step 2 — Enter the backend directory
+### Navigate to Backend
 
 ```bash
 cd backend
 ```
 
-### Step 3 — Create a Python virtual environment
+### Create Virtual Environment
 
 Windows CMD:
-
-```cmd
-py -m venv .venv
-```
-
-If `py` is unavailable, use:
 
 ```cmd
 python -m venv .venv
 ```
 
-### Step 4 — Activate the environment
-
-Windows CMD:
+### Activate Virtual Environment
 
 ```cmd
 .venv\Scripts\activate.bat
 ```
 
-Windows PowerShell:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-If activation is blocked by a PowerShell execution policy, use CMD or invoke `.venv\Scripts\python.exe` directly.
-
-### Step 5 — Install dependencies
+### Install Dependencies
 
 ```bash
 python -m pip install --upgrade pip
+```
+
+```bash
 python -m pip install -r requirements.txt
 ```
 
-### Step 6 — Start FastAPI
+### Start FastAPI Server
 
 ```bash
 python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-The server should be available at:
-
-```text
-http://127.0.0.1:8000
-```
-
-Keep this terminal running.
-
-### Step 7 — Verify the backend
-
-Open these URLs in your browser:
-
-```text
-http://127.0.0.1:8000/health
-http://127.0.0.1:8000/docs
-```
-
-The health endpoint should return a successful response, and Swagger UI should display the available API routes.
-
----
-
-## 12. Run the Web Dashboard
-
-The web dashboard is located at:
-
-```text
-frontend/index.html
-```
-
-### Option A — Open directly
-
-Open `frontend/index.html` in a browser for a quick initial inspection.
-
-Depending on the frontend implementation, some API requests may require the page to be served through HTTP rather than opened using `file://`.
-
-### Option B — Start a local web server
-
-From the project root, open a second terminal:
-
-```bash
-cd frontend
-python -m http.server 5500
-```
+### Verify Backend
 
 Open:
 
 ```text
-http://127.0.0.1:5500
+http://127.0.0.1:8000/health
 ```
 
-Keep the backend running separately on port `8000`.
+Open API documentation:
 
-**Important:** A static HTTP server does not compile or bundle a frontend. This approach is appropriate for a standalone HTML file only if its code supports that execution mode.
-
-If the browser reports API connection errors, verify the API URL and browser console. Configure CORS on the backend if the frontend's origin requires it.
+```text
+http://127.0.0.1:8000/docs
+```
 
 ---
 
-## 13. Run the Mobile Application
+## 14. Mobile Application Setup
 
-Open a new terminal from the project root.
+Open another terminal from the repository root.
 
-### Step 1 — Enter the mobile directory
+### Navigate to Mobile Application
 
 ```bash
 cd nia-mobile
 ```
 
-### Step 2 — Install JavaScript dependencies
+### Install Dependencies
 
 ```bash
 npm ci
 ```
 
-Use `npm ci` to install the dependencies recorded in `package-lock.json`.
-
-### Step 3 — Start Expo
+### Start Expo
 
 ```bash
 npx expo start
 ```
 
-Expo displays a QR code and development options.
+Use the displayed QR code or an available Android emulator/development environment.
 
-### Step 4 — Choose a platform
+### Backend Connectivity
 
-- Press `w` if web support is available and you want to run the app in a browser.
-- Scan the QR code using Expo Go if the project is compatible with your installed Expo Go version.
-- Use an Android emulator or an appropriate development build if required.
+For a physical Android device, configure the API URL to use the reachable IP address of the backend computer or the deployed backend server.
 
-Keep the Expo terminal running.
-
-### Important mobile networking rule
-
-`127.0.0.1` on a physical phone refers to the phone itself, not your development computer.
-
-If the mobile app connects to a backend on your laptop, configure the API base URL to use the laptop's reachable LAN IP address, for example:
-
-```text
-http://192.168.1.100:8000
-```
-
-Replace this example with the actual IP address of the development computer.
-
-Both devices normally need to be on a network that allows communication between them, and the firewall must permit the required connection. For a remote or production deployment, use an appropriately secured HTTPS endpoint.
+Do not use `127.0.0.1` as the remote computer's address from a physical phone.
 
 ---
 
-## 14. Connect the Frontend to the Backend
+## 15. Frontend Configuration
 
-The frontend must use the correct API base URL.
-
-### Local browser
-
-When the web dashboard and API are running on the same development computer, the API base URL can be:
+The mobile application uses the environment variable:
 
 ```text
-http://127.0.0.1:8000
+EXPO_PUBLIC_API_URL
 ```
 
-### Physical mobile device
+Example local configuration:
 
-Configure the base URL to use the development computer's LAN IP address:
-
-```text
-http://YOUR_COMPUTER_LAN_IP:8000
+```env
+EXPO_PUBLIC_API_URL=http://YOUR_BACKEND_HOST:8000
 ```
 
-### Production deployment
+Replace `YOUR_BACKEND_HOST` with the correct backend address.
 
-Configure the application to use the deployed API endpoint over HTTPS.
-
-### Configuration checklist
-
-1. Locate the API base URL in `frontend/index.html` and `nia-mobile/src/app/index.tsx`.
-2. Replace development-specific addresses when needed.
-3. Make sure the backend is running and reachable.
-4. Check the browser console or Expo logs for request failures.
-5. Configure FastAPI CORS appropriately for the frontend origin.
-6. Avoid hardcoding production credentials or secrets into frontend code.
-
-A future improvement is to centralize API configuration through environment-specific settings instead of hardcoding addresses.
+The application uses this URL for its HTTP requests.
 
 ---
 
-## 15. Test the API
+## 16. API Testing
 
-With the backend running, use a second terminal.
+Start the backend before executing API tests.
 
-### Health check
+### Check Backend Health
 
 ```bash
 curl http://127.0.0.1:8000/health
 ```
 
-### Robot state
+### Retrieve Robot Information
 
 ```bash
 curl http://127.0.0.1:8000/robot
 ```
 
-### Create a delivery
-
-Windows CMD:
-
-```cmd
-curl -X POST "http://127.0.0.1:8000/deliveries" -H "Content-Type: application/json" -d "{\"table_number\":5,\"order_id\":\"ORD-1001\",\"items\":[\"Veg Burger\",\"French Fries\"]}"
-```
-
-### List deliveries
+### Retrieve Deliveries
 
 ```bash
 curl http://127.0.0.1:8000/deliveries
 ```
 
-### Retrieve a delivery
+### Create a Delivery
 
-Replace `1` with the ID returned by the creation request:
+Windows CMD:
 
-```bash
-curl http://127.0.0.1:8000/deliveries/1
+```cmd
+curl -X POST "http://127.0.0.1:8000/kds/food-ready" -H "Content-Type: application/json" -d "{\"order_id\":\"ORD-1001\",\"table_number\":5,\"items\":[\"Burger\",\"Fries\"],\"source\":\"KDS\",\"tray\":\"Tray 1\"}"
 ```
 
-### Load food
+### Retrieve Batches
 
 ```bash
-curl -X POST http://127.0.0.1:8000/deliveries/1/load
+curl http://127.0.0.1:8000/batches
 ```
 
-### Dispatch
+### Interactive API Testing
 
-```bash
-curl -X POST http://127.0.0.1:8000/deliveries/1/dispatch
+Open:
+
+```text
+http://127.0.0.1:8000/docs
 ```
 
-### Record arrival
-
-```bash
-curl -X POST http://127.0.0.1:8000/deliveries/1/arrive
-```
-
-These commands illustrate the available workflow. Follow the live `/docs` schemas if a route requires a body, returns a different response, or enforces a different state transition.
+Swagger UI can be used to test the available backend endpoints.
 
 ---
 
-## 16. Database and Data Storage
+## 17. Development Guidelines
 
-SQLite is suitable for local development and small prototypes. However, verify the current backend persistence implementation before assuming that all records are stored in a database.
-
-### Local database files
-
-If the backend creates a local SQLite database, its location should be documented in the code or configuration.
-
-Local database files should generally not be committed to GitHub.
-
-### Development recommendations
-
-- Keep local database files outside version control.
-- Use a separate test database for automated tests.
-- Avoid using production customer data during development.
-- Introduce migrations when the database schema becomes more complex.
-- Use a managed database or another appropriate persistence strategy if production scale requires it.
-
-### Data persistence verification
-
-1. Create a delivery through the API.
-2. Restart the backend.
-3. Query the delivery again.
-4. Confirm whether the record remains available.
-
-If the record disappears, the relevant state may be stored only in memory or may not be persisted by the current configuration.
-
----
-
-## 17. Robot Integration Roadmap
-
-The project is structured as an application prototype. Connecting it to a physical robot requires additional integration and testing.
-
-### Phase 1 — Application prototype
-
-- Start the backend.
-- Run the web dashboard.
-- Run the mobile application.
-- Create and track delivery tasks.
-- Validate API requests and responses.
-
-### Phase 2 — Simulation integration
-
-- Select the robot model and simulator.
-- Configure the robot description and sensor setup.
-- Configure ROS 2 topics, services, and actions.
-- Configure the map, localization, and navigation stack.
-- Implement a robot integration layer between the API and ROS 2.
-- Test delivery tasks in simulation.
-
-### Phase 3 — Hardware integration
-
-- Connect the robot's ROS 2 interfaces.
-- Integrate real navigation feedback.
-- Verify emergency-stop and safe-stop behavior.
-- Validate sensor data and obstacle handling.
-- Test loading, arrival, handover, and docking operations.
-
-### Phase 4 — Restaurant deployment
-
-- Integrate the restaurant's POS or kitchen display system if required.
-- Add authentication and role-based access control.
-- Implement reliable task persistence and recovery.
-- Add monitoring, logs, alerts, and error handling.
-- Test network failures and interrupted deliveries.
-- Validate the system in a controlled environment before deployment.
-
-### Essential integration principle
-
-The API should not report a robot as having arrived merely because a dispatch request was accepted. A robot integration layer should consume actual navigation feedback and update the application with verified state transitions.
-
----
-
-## 18. Troubleshooting
-
-### Backend: `ModuleNotFoundError`
-
-Make sure the backend virtual environment is active and install the dependencies again:
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-### Backend: `Address already in use`
-
-Port `8000` may already be occupied. Stop the other server or use a different port, then update the frontend API URL accordingly.
-
-### Mobile app cannot reach the backend
-
-- Check that FastAPI is running.
-- Verify the API base URL.
-- Do not use `127.0.0.1` from a physical phone to access the computer.
-- Check Wi-Fi connectivity and firewall settings.
-- Inspect Expo logs and backend logs.
-
-### Browser reports a CORS error
-
-Configure FastAPI's CORS middleware for the actual development frontend origin. Do not use unrestricted origins with credentials in production.
-
-### npm installation errors
-
-Check your Node.js and npm versions, then try:
-
-```bash
-npm ci
-```
-
-If dependency compatibility is the problem, review the Expo SDK and dependency versions in `package.json` before changing packages.
-
-### API request returns `404`
-
-- Check the endpoint path.
-- Confirm that the correct backend is running.
-- Open `http://127.0.0.1:8000/docs` to inspect available routes.
-
-### API request returns `422`
-
-FastAPI rejected the request because its fields or types do not match the endpoint schema. Review the request model in Swagger UI.
-
-### Git reports local changes
-
-Before updating from GitHub:
-
-```bash
-git status
-```
-
-Commit or preserve your changes before running `git pull`.
-
----
-
-## 19. Security Considerations
-
-This repository is public, so all committed source code and documentation are visible to anyone.
-
-- Never commit API keys, passwords, access tokens, or private credentials.
-- Do not commit `.env` files containing secrets.
-- Do not upload customer information or private restaurant records.
-- Keep local databases and virtual environments out of version control.
-- Use authentication and authorization before exposing operational APIs to untrusted users.
-- Restrict CORS to approved origins in production.
-- Use HTTPS for remote communication.
-- Do not expose development servers directly to the public internet without appropriate security controls.
-- Validate delivery transitions and authorize actions on the backend.
-- Ensure that robot motion commands are protected by suitable safety controls.
-
-The current prototype should not be treated as production-ready until authentication, authorization, persistence, monitoring, recovery, and robot safety have been validated.
-
----
-
-## 20. Development Guidelines
-
-### Before making changes
+### Pull Latest Changes
 
 ```bash
 git pull origin main
+```
+
+### Check Repository Status
+
+```bash
 git status
 ```
 
-### After modifying code
-
-Test the affected component:
-
-- Backend: start FastAPI and verify the affected endpoints.
-- Web dashboard: test the browser UI and API requests.
-- Mobile app: run Expo and test the affected screen or workflow.
-
-### Commit changes
+### Install Backend Dependencies
 
 ```bash
-git add .
-git commit -m "Describe the change"
+pip install -r backend/requirements.txt
 ```
 
-### Push changes
+### Install Mobile Dependencies
+
+```bash
+cd nia-mobile
+npm ci
+```
+
+### Start Mobile Application
+
+```bash
+npx expo start
+```
+
+### Commit Changes
+
+```bash
+git add <required-files>
+git commit -m "Describe the application update"
+```
+
+### Push Changes
 
 ```bash
 git push origin main
 ```
 
-For shared company development, use feature branches and pull requests when required by the organization's workflow.
+Use the team's agreed Git workflow when multiple developers are working on the repository.
 
-Do not commit virtual environments, `node_modules`, generated build folders, local database files, or secrets.
-
----
-
-## 21. Contributing
-
-Contributions should focus on maintainability, reliability, and safe integration.
-
-Suggested areas for improvement:
-
-- Centralized API configuration.
-- Automated backend tests.
-- Stronger delivery-state validation.
-- Persistent task storage and recovery.
-- Structured logging and operational monitoring.
-- Authentication and role-based permissions.
-- Robot integration interfaces and feedback handling.
-- ROS 2 simulation and integration tests.
-- Deployment documentation.
-
-Before submitting changes, verify the affected functionality and document any new configuration requirements.
+Do not commit generated environments, local databases, caches, or device logs unless they are explicitly required.
 
 ---
 
-## Maintainers and Repository
+## 18. Current Implementation Status
 
-Repository: https://github.com/neuron-ai/nia-restaurant-robot-app
-
-For questions about the application architecture, setup, or future robot integration, coordinate with the project maintainers.
+| Component | Status |
+|---|---|
+| FastAPI backend | Implemented |
+| REST API | Implemented |
+| SQLite database | Implemented |
+| Delivery creation | Implemented |
+| Single-delivery workflow | Implemented |
+| Multi-delivery batches | Implemented |
+| Table assignment | Implemented |
+| Tray assignment | Implemented |
+| Delivery queue management | Implemented |
+| Event history | Implemented |
+| Robot application status | Implemented with simulated state |
+| Battery status management | Implemented with simulated state |
+| React Native mobile application | Implemented |
+| Expo configuration | Implemented |
+| Android network configuration plugin | Added |
+| Physical robot execution | Not part of the current application implementation |
 
 ---
 
-**Project status:** Development prototype. Application features, persistent storage, security controls, and robot integration should be verified against the implementation before operational or production use.
+## Repository Information
+
+**Project:** NIA Restaurant Robot App
+
+**Version:** 2.0.0
+
+**GitHub Repository:**  
+https://github.com/neuron-ai/nia-restaurant-robot-app
+
+**Main Branch:** `main`
+
+---
+
+## Project Summary
+
+NIA Version 2 provides an application-level platform for managing restaurant delivery operations.
+
+It includes a FastAPI backend, SQLite database, and React Native mobile application with delivery creation, batch management, table and tray assignment, queue processing, robot status management, and delivery history.
+
+The current implementation focuses on the restaurant application workflow and its backend–frontend communication.
