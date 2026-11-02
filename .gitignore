@@ -28,3 +28,23 @@ coverage/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Environment and secrets
+.env
+**/.env
+**/.venv/
+
+# Python generated files
+__pycache__/
+*.py[cod]
+
+# Database files
+backend/*.db
+
+# Node generated files
+**/node_modules/
+
+# Device logs
+nia-mobile/nia_app_logs.txt
+nia-mobile/nia_full_logs.txt
+nia-mobile/nia_logs.txt
