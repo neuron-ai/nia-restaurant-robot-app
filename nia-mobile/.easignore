@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+**/.env
+node_modules/
+.expo/
+android/.gradle/
+android/**/.gradle/

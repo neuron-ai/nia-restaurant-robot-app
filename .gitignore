@@ -48,3 +48,5 @@ backend/*.db
 nia-mobile/nia_app_logs.txt
 nia-mobile/nia_full_logs.txt
 nia-mobile/nia_logs.txt
+nia-mobile/eas-archive/
+package_info.txt

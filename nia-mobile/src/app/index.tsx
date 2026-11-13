@@ -7,8 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 // For browser on this laptop use localhost. For a physical phone, update the IP below.
 
-const API_URL =
-  process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API_URL = 'http://192.168.31.93:8000';
+  
 
 
 type RecordData = Record<string, any>;
@@ -111,6 +111,7 @@ export default function HomeScreen() {
   const [tableCount, setTableCount] = useState('15');
   const [batteryInput, setBatteryInput] = useState('100');
   const [lastChecked, setLastChecked] = useState('—');
+  const [mobileChangeOpen, setMobileChangeOpen] = useState(false);
 
   const api = useCallback(async (path: string, method = 'GET', body?: RecordData) => {
     const data = await request(path, method, body, authToken);
@@ -446,83 +447,93 @@ export default function HomeScreen() {
       <View style={[s.accountStrip, isCompact && s.accountStripCompact]}><Text style={[s.accountName, isCompact && s.accountNameCompact]}>{signedInAs}</Text><Pressable onPress={signOut} style={[s.signOutButton, isCompact && s.signOutButtonCompact]}><Text style={[s.signOutText, isCompact && s.signOutTextCompact]}>Sign out</Text></Pressable></View>
       <Pressable onPress={() => refresh()} style={[s.refresh, isCompact && s.refreshCompact]}><Text style={[s.refreshText, isCompact && s.refreshTextCompact]}>↻</Text></Pressable>
     </View>
-    <ScrollView style={s.scroll} scrollEnabled={!(isCompact && section === 'workflow')} contentContainerStyle={[s.page, isCompact && section === 'workflow' && s.mobilePage]} refreshControl={<RefreshControl refreshing={busy} onRefresh={() => refresh()} tintColor={C.primary} />}>
+    <ScrollView style={s.scroll} scrollEnabled={true} contentContainerStyle={[s.page, isCompact && s.phonePage]} refreshControl={<RefreshControl refreshing={busy} onRefresh={() => refresh()} tintColor={C.primary} />}>
       {section === 'workflow' && <>
-        {!isCompact && <Text style={s.eyebrow}>RESTAURANT STAFF WORKFLOW</Text>}
+        <Text style={s.eyebrow}>RESTAURANT STAFF WORKFLOW</Text>
         <Text style={isCompact ? s.compactHeading : s.heading}>Staff food pickup & delivery</Text>
-        {!isCompact && <Text style={s.description}>Create an order, select the active delivery, then complete the restaurant workflow with three staff actions.</Text>}
+        <Text style={s.description}>Create an order, select the active delivery, then complete the restaurant workflow with three staff actions.</Text>
         {!!notice && <View style={[isCompact ? s.compactNotice : s.notice, /cannot|failed|error|invalid|not ready|select/i.test(notice) && s.noticeError]}><Text style={s.noticeText}>{notice}</Text></View>}
         {busy && <View style={s.loading}><ActivityIndicator color={C.primary} /><Text style={s.muted}>Updating…</Text></View>}
       </>}
       {section === 'workflow' && isCompact && <View style={s.mobileWorkflow}>
-        <View style={s.mobileOrderCard}>
-          <Text style={s.mobileSectionTitle}>NEW DELIVERY</Text>
-          <View style={s.mobileInputRow}>
-            <View style={{ flex: 1.2 }}><Text style={s.mobileLabel}>ORDER ID</Text><TextInput value={orderId} onChangeText={setOrderId} placeholder="ORD-1001" placeholderTextColor="#91A0B5" style={s.mobileInput} /></View>
-            <View style={{ width: 78 }}><Text style={s.mobileLabel}>TABLE</Text><TextInput value={table} onChangeText={setTable} keyboardType="numeric" placeholder="2" placeholderTextColor="#91A0B5" style={s.mobileInput} /></View>
-          </View>
-          <Text style={s.mobileLabel}>FOOD ITEMS</Text>
-          <TextInput value={items} onChangeText={setItems} placeholder="Burger, Fries" placeholderTextColor="#91A0B5" style={s.mobileInput} />
-          <View style={s.mobileInputRow}>
-            <Text style={s.mobileSmallHint}>Assigned tray: {singleTrays.join(', ') || 'Tray 1'}</Text>
-            <Pressable onPress={() => setSingleTrays(['Tray 1'])}><Text style={s.mobileLink}>Use Tray 1</Text></Pressable>
-          </View>
-          <Pressable style={[s.mobileCreateButton, busy && s.disabled]} onPress={createBatch} disabled={busy}>
-            <Text style={s.mobileCreateText}>+ CREATE ORDER</Text>
-          </Pressable>
+        <View style={s.mobileIntroCard}>
+          <Text style={s.mobileEyebrow}>STAFF WORKFLOW</Text>
+          <Text style={s.mobileTitle}>Deliver an order</Text>
+          <Text style={s.mobileIntroText}>Follow these steps in order. NIA enables each action when the robot is ready.</Text>
+          <View style={s.mobileGuideRow}><Text style={s.mobileGuideNumber}>1</Text><Text style={s.mobileGuideText}>Create the order and choose a table and tray.</Text></View>
+          <View style={s.mobileGuideRow}><Text style={s.mobileGuideNumber}>2</Text><Text style={s.mobileGuideText}>Select the active delivery and confirm kitchen loading.</Text></View>
+          <View style={s.mobileGuideRow}><Text style={s.mobileGuideNumber}>3</Text><Text style={s.mobileGuideText}>Confirm delivery after the robot reaches the table.</Text></View>
         </View>
-        <View style={s.mobileSelectedCard}>
-          <View style={s.mobileSelectedTop}>
-            <Text style={s.mobileSectionTitle}>ACTIVE DELIVERY</Text>
-            <Text style={s.mobileStatus}>{connection === 'online' ? 'ONLINE' : connection === 'offline' ? 'OFFLINE' : 'CONNECTING'}</Text>
-          </View>
-          {selected ? <>
-            <Text style={s.mobileOrderName}>{show(selected.order_id)} · TABLE {show(selected.table_number)}</Text>
-            <Text style={s.mobileSmallHint}>Status: {show(selected.status).replaceAll('_', ' ')} · {selectedIsRobotTask ? 'Assigned to NIA' : 'Not assigned to robot'}</Text>
-          </> : <Text style={s.mobileSmallHint}>Create an order or select an active delivery below.</Text>}
-          <View style={s.mobileDeliveryChoices}>
-            {deliveries.filter(d => !['completed', 'cancelled', 'station_confirmed'].includes(String(d.status))).slice(0, 4).map(d => {
-              const id = Number(d.delivery_id ?? d.id);
-              return <Choice key={String(id)} label={`#${id} · T${show(d.table_number)}`} selected={String(id) === selectedId} onPress={() => { selectDelivery(id); setTable(String(d.table_number ?? table)); }} />;
-            })}
-          </View>
+
+        <View style={s.mobileCard}>
+          <View style={s.mobileCardHeading}><View style={{ flex: 1 }}><Text style={s.mobileCardTitle}>Step 1 · Create order</Text><Text style={s.mobileCardHint}>Enter order details and choose the delivery destination.</Text></View><Text style={s.mobileStepTag}>STEP 1</Text></View>
+          <View style={s.mobileModeRow}><Choice label="Single order" selected={deliveryMode === 'single'} onPress={() => setDeliveryMode('single')} /><Choice label="3-table trip" selected={deliveryMode === 'multi'} onPress={() => setDeliveryMode('multi')} /></View>
+          {deliveryMode === 'single' ? <>
+            <Field label="Order ID" value={orderId} onChangeText={setOrderId} placeholder="e.g. ORD-1002" />
+            <Field label="Food items (separate with commas)" value={items} onChangeText={setItems} placeholder="Veg Burger, French Fries" />
+            <Text style={s.mobileFieldHeading}>Choose destination table</Text>
+            <View style={s.mobileTableGrid}>{tables.map(n => <Pressable key={`m-table-${n}`} onPress={() => setTable(String(n))} style={[s.mobileTable, Number(table) === n && s.mobileTableSelected]}><Text style={[s.mobileTableText, Number(table) === n && s.mobileTableTextSelected]}>{`T${n}`}</Text></Pressable>)}</View>
+            <Text style={s.mobileFieldHeading}>Choose tray(s)</Text>
+            <Text style={s.mobileCardHint}>Select one or more trays for this order.</Text>
+            <View style={s.mobileModeRow}>{trays.map(t => <Choice key={`m-${t}`} label={t} selected={singleTrays.includes(t)} onPress={() => setSingleTrays(old => old.includes(t) ? (old.length > 1 ? old.filter(x => x !== t) : old) : [...old, t])} />)}</View>
+            <View style={s.mobileSummary}><Text style={s.mobileSummaryText}>Destination: Table {table}</Text><Text style={s.mobileSummaryText}>Selected trays: {singleTrays.join(', ')}</Text></View>
+          </> : <>
+            <Text style={s.mobileCardHint}>Select exactly three tables. Enter an order ID and food items for each, then assign trays.</Text>
+            <View style={s.mobileTableGrid}>{tables.map(n => { const chosen = batchOrders.some(o => o.table_number === n); return <Pressable key={`m-batch-${n}`} onPress={() => toggleBatchTable(n)} style={[s.mobileTable, chosen && s.mobileTableSelected]}><Text style={[s.mobileTableText, chosen && s.mobileTableTextSelected]}>{chosen ? '✓ ' : ''}T{n}</Text></Pressable>; })}</View>
+            {batchOrders.map((o, index) => <View key={`m-batch-form-${o.table_number}`} style={s.mobileBatchCard}><Text style={s.mobileFieldHeading}>Table {o.table_number} order</Text><Field label="Order ID" value={o.order_id} onChangeText={v => updateBatchOrder(index, 'order_id', v)} placeholder="e.g. ORD-1002" /><Field label="Food items" value={o.items} onChangeText={v => updateBatchOrder(index, 'items', v)} placeholder="Pizza, Juice" /><Text style={s.mobileCardHint}>Assign trays (each tray can be used once per trip).</Text><View style={s.mobileModeRow}>{trays.map(t => <Choice key={`${o.table_number}-${t}`} label={t} selected={o.trays.includes(t)} onPress={() => toggleBatchTray(index, t)} />)}</View></View>)}
+            <Text style={s.mobileSummaryText}>{batchOrders.length} of 3 tables selected</Text>
+          </>}
+          <Pressable onPress={createBatch} disabled={busy} style={[s.mobilePrimaryButton, busy && s.disabled]}><Text style={s.mobilePrimaryButtonText}>{busy ? 'PLEASE WAIT…' : deliveryMode === 'single' ? 'CREATE ORDER' : 'CREATE 3-TABLE TRIP'}</Text></Pressable>
+          <Text style={s.mobileCardHint}>After creating the order, select it in Step 2 to continue.</Text>
         </View>
-        <View style={s.mobileStepsCard}>
-          <Text style={s.mobileSectionTitle}>3-STEP DELIVERY WORKFLOW</Text>
-          <Pressable style={[s.mobileStepButton, s.mobileKitchenButton, (busy || !canComeToKitchen) && s.disabled]} onPress={() => deliveryAction('pickup-arrived', 'Kitchen pickup arrival recorded.')} disabled={busy || !canComeToKitchen}>
-            <Text style={[s.mobileStepNumber, { color: C.green }]}>1</Text><View style={s.mobileStepCopy}><Text style={[s.mobileStepText, { color: C.green }]}>ROBOT ARRIVED AT KITCHEN</Text><Text style={s.mobileStepHint}>Confirm robot reached the pickup point</Text></View>
-          </Pressable>
-          <Pressable style={[s.mobileStepButton, s.mobileDispatchButton, (busy || !(canConfirmFood || canDispatch)) && s.disabled]} onPress={loadFoodAndDispatch} disabled={busy || !(canConfirmFood || canDispatch)}>
-            <Text style={s.mobileStepNumber}>2</Text><View style={s.mobileStepCopy}><Text style={s.mobileStepText}>FOOD LOADED · START DELIVERY</Text><Text style={s.mobileStepHint}>Confirm loading and dispatch to table</Text></View>
-          </Pressable>
-          <Pressable style={[s.mobileStepButton, s.mobileCompleteButton, (busy || !(canConfirmArrival || selectedStatus === 'arrived_at_table' || selectedStatus === 'handoff_confirmed')) && s.disabled]} onPress={confirmDeliveryAndReturn} disabled={busy || !(canConfirmArrival || selectedStatus === 'arrived_at_table' || selectedStatus === 'handoff_confirmed')}>
-            <Text style={[s.mobileStepNumber, { color: C.green }]}>3</Text><View style={s.mobileStepCopy}><Text style={[s.mobileStepText, { color: C.green }]}>CONFIRM DELIVERY</Text><Text style={s.mobileStepHint}>Confirm handoff, complete and return/queue next task</Text></View>
-          </Pressable>
-          {busy && <Text style={s.mobileSmallHint}>Processing workflow…</Text>}
+
+        <View style={s.mobileCard}>
+          <View style={s.mobileCardHeading}><View style={{ flex: 1 }}><Text style={s.mobileCardTitle}>Step 2 · Select active delivery</Text><Text style={s.mobileCardHint}>Choose the task currently assigned to NIA. It is marked CURRENT ROBOT TASK.</Text></View><Text style={s.mobileStepTag}>STEP 2</Text></View>
+          {deliveries.length ? <View style={s.mobileDeliveryList}>{[...deliveries].filter(d => !['completed', 'cancelled', 'station_confirmed'].includes(d.status)).sort((a,b) => Number(Number(b.delivery_id ?? b.id) === Number(robot?.current_delivery_id)) - Number(Number(a.delivery_id ?? a.id) === Number(robot?.current_delivery_id))).map(d => { const id = Number(d.delivery_id ?? d.id); const activeTask = Number(robot?.current_delivery_id) === id; const chosen = String(id) === selectedId; return <Pressable key={`m-delivery-${id}`} onPress={() => { selectDelivery(id); setTable(String(d.table_number ?? '1')); }} style={[s.mobileDeliveryRow, chosen && s.mobileDeliveryRowSelected]}><View style={{ flex: 1, gap: 3 }}><Text style={s.mobileDeliveryTitle}>{show(d.order_id, `Delivery #${id}`)} · Table {show(d.table_number)}</Text><Text style={s.mobileCardHint}>{show(d.status).replaceAll('_', ' ')}{activeTask ? ' · CURRENT ROBOT TASK' : ''}</Text></View><Text style={s.mobileSelectMark}>{chosen ? '✓' : '›'}</Text></Pressable>; })}</View> : <Text style={s.mobileCardHint}>No deliveries yet. Create an order in Step 1.</Text>}
+          {selected ? <View style={s.mobileSummary}><Text style={s.mobileSummaryText}>Selected: {show(selected.order_id)} · Table {show(selected.table_number)}</Text><Text style={s.mobileSummaryText}>Status: {show(selected.status).replaceAll('_', ' ')}</Text></View> : <Text style={s.mobileCallout}>Select an active delivery to unlock the workflow actions.</Text>}
+        </View>
+
+        <View style={s.mobileCard}>
+          <View style={s.mobileCardHeading}><View style={{ flex: 1 }}><Text style={s.mobileCardTitle}>Step 3 · Complete delivery</Text><Text style={s.mobileCardHint}>Complete these actions in order. Unavailable actions become active when the robot reaches the correct stage.</Text></View><Text style={s.mobileStepTag}>STEP 3</Text></View>
+          <View style={s.mobileActionRow}><Text style={s.mobileActionNumber}>A</Text><View style={{ flex: 1 }}><Text style={s.mobileActionTitle}>Robot arrived at kitchen</Text><Text style={s.mobileCardHint}>Confirm when NIA reaches the kitchen pickup point.</Text></View></View>
+          <Pressable onPress={() => { if (!selected) { setNotice('Select an active delivery in Step 2 first.'); return; } deliveryAction('pickup-arrived', 'Kitchen pickup arrival recorded.'); }} disabled={busy || !canComeToKitchen} style={[s.mobileWorkflowButton, !canComeToKitchen && s.mobileDisabledButton]}><Text style={s.mobileWorkflowButtonText}>CONFIRM KITCHEN ARRIVAL</Text></Pressable>
+          <View style={s.mobileActionRow}><Text style={s.mobileActionNumber}>B</Text><View style={{ flex: 1 }}><Text style={s.mobileActionTitle}>Food loaded · Start delivery</Text><Text style={s.mobileCardHint}>After placing food on the assigned tray, confirm loading and start the trip.</Text></View></View>
+          <Pressable onPress={loadFoodAndDispatch} disabled={busy || !(canConfirmFood || canDispatch)} style={[s.mobileWorkflowButton, !(canConfirmFood || canDispatch) && s.mobileDisabledButton]}><Text style={s.mobileWorkflowButtonText}>CONFIRM FOOD & START DELIVERY</Text></Pressable>
+          <View style={s.mobileActionRow}><Text style={s.mobileActionNumber}>C</Text><View style={{ flex: 1 }}><Text style={s.mobileActionTitle}>Confirm customer delivery</Text><Text style={s.mobileCardHint}>When NIA reaches the table, confirm the handoff and completion.</Text></View></View>
+          <Pressable onPress={confirmDeliveryAndReturn} disabled={busy || !(canConfirmArrival || selectedStatus === 'arrived_at_table' || selectedStatus === 'handoff_confirmed')} style={[s.mobileWorkflowButton, s.mobileFinishButton, !(canConfirmArrival || selectedStatus === 'arrived_at_table' || selectedStatus === 'handoff_confirmed') && s.mobileDisabledButton]}><Text style={s.mobileWorkflowButtonText}>CONFIRM DELIVERY COMPLETE</Text></Pressable>
+          {busy && <View style={s.loading}><ActivityIndicator color={C.primary} /><Text style={s.muted}>Updating delivery…</Text></View>}
+          {!!notice && <View style={[s.mobileNotice, /cannot|failed|error|invalid|not ready|select/i.test(notice) && s.noticeError]}><Text style={s.noticeText}>{notice}</Text></View>}
+        </View>
+
+        <View style={s.mobileCard}>
+          <Pressable onPress={() => setMobileChangeOpen(v => !v)} style={s.mobileExpandHeader}><View style={{ flex: 1 }}><Text style={s.mobileCardTitle}>Change delivery destination</Text><Text style={s.mobileCardHint}>Use only when an active order needs a different table.</Text></View><Text style={s.mobileExpandIcon}>{mobileChangeOpen ? '−' : '+'}</Text></Pressable>
+          {mobileChangeOpen && <><Text style={s.mobileFieldHeading}>Choose new table</Text><View style={s.mobileTableGrid}>{tables.map(n => <Pressable key={`m-change-${n}`} onPress={() => setTable(String(n))} style={[s.mobileTable, Number(table) === n && s.mobileTableSelected]}><Text style={[s.mobileTableText, Number(table) === n && s.mobileTableTextSelected]}>{`T${n}`}</Text></Pressable>)}</View><Pressable onPress={updateTable} disabled={busy || !selected} style={[s.mobilePrimaryButton, (busy || !selected) && s.disabled]}><Text style={s.mobilePrimaryButtonText}>SAVE NEW DESTINATION</Text></Pressable></>}
         </View>
       </View>}
-      {section === 'workflow' && !isCompact && <View style={s.panelShell}>
-        <View style={s.panelSidebar}>
-          <Pressable style={[s.panelSideButton, s.panelStartButton]} onPress={createBatch} disabled={busy}>
+
+      {section === 'workflow' && !isCompact && <View style={[s.panelShell, isCompact && s.panelShellCompact]}>
+
+        <View style={[s.panelSidebar, isCompact && s.panelSidebarCompact]}>
+          <Pressable style={[s.panelSideButton, isCompact && s.panelSideButtonCompact, s.panelStartButton]} onPress={createBatch} disabled={busy}>
             <Text style={[s.panelButtonText, s.panelActionText]}>CREATE ORDER</Text>
           </Pressable>
-          <Pressable style={[s.panelSideButton, s.panelKitchenButton]} onPress={() => {
+          <Pressable style={[s.panelSideButton, isCompact && s.panelSideButtonCompact, s.panelKitchenButton]} onPress={() => {
             if (!selected) { setNotice('Select an active delivery below before confirming its kitchen pickup.'); return; }
             deliveryAction('pickup-arrived', 'Kitchen pickup arrival recorded in the backend.');
           }} disabled={busy || !canComeToKitchen}>
             <Text style={[s.panelButtonText, s.panelKitchenText]}>ROBOT ARRIVED AT KITCHEN</Text>
           </Pressable>
-          <Pressable style={[s.panelSideButton, s.panelStepButton]} onPress={loadFoodAndDispatch}
+          <Pressable style={[s.panelSideButton, isCompact && s.panelSideButtonCompact, s.panelStepButton]} onPress={loadFoodAndDispatch}
             disabled={busy || !(canConfirmFood || canDispatch)}>
             <Text style={s.panelButtonText}>2. FOOD LOADED · START DELIVERY</Text>
           </Pressable>
-          <Pressable style={[s.panelSideButton, s.panelFinishButton]} onPress={confirmDeliveryAndReturn}
+          <Pressable style={[s.panelSideButton, isCompact && s.panelSideButtonCompact, s.panelFinishButton]} onPress={confirmDeliveryAndReturn}
             disabled={busy || !(canConfirmArrival || selectedStatus === 'arrived_at_table' || selectedStatus === 'handoff_confirmed')}>
             <Text style={[s.panelButtonText, s.panelFinishText]}>3. CONFIRM DELIVERY</Text>
           </Pressable>
         </View>
-        <View style={s.panelMain}>
-          <View style={s.panelTopline}>
+        <View style={[s.panelMain, isCompact && s.panelMainCompact]}>
+          <View style={[s.panelTopline, isCompact && s.panelToplineCompact]}>
             <View style={{ flex: 1, gap: 3 }}>
               <Text style={s.panelCaption}>DELIVERY PLANNER</Text>
               <Text style={s.panelSubtitle}>Choose single-task or multi-task delivery. Assignment is validated and saved by FastAPI.</Text>
@@ -537,12 +548,12 @@ export default function HomeScreen() {
             </View>
           </View>
 {deliveryMode === 'single' ? <>
-            <View style={s.panelFields}>
+            <View style={[s.panelFields, isCompact && s.panelFieldsCompact]}>
               <Field label="Order ID" value={orderId} onChangeText={setOrderId} placeholder="e.g. ORD-1002" />
               <Field label="Food items (comma-separated)" value={items} onChangeText={setItems} placeholder="Pizza, Juice" />
             </View>
             <Text style={s.panelSectionLabel}>SELECT DESTINATION TABLE</Text>
-            <View style={s.panelGrid}>
+            <View style={[s.panelGrid, isCompact && s.panelGridCompact]}>
               {tables.map(n => <Pressable key={n}
                 style={[s.panelTableButton, Number(table) === n && s.panelTableButtonSelected]}
                 onPress={() => setTable(String(n))}>
@@ -560,7 +571,7 @@ export default function HomeScreen() {
             <View style={s.changeDestinationBox}>
               <Text style={s.panelSectionLabel}>CHANGE DESTINATION</Text>
               <Text style={s.panelHint}>{selected ? `Selected delivery: ${show(selected.order_id)} · Current table: T${show(selected.table_number)}` : 'Select an active delivery below to update its destination.'}</Text>
-              <View style={s.panelGrid}>
+              <View style={[s.panelGrid, isCompact && s.panelGridCompact]}>
                 {tables.map(n => <Pressable key={`destination-single-${n}`}
                   style={[s.panelTableButton, Number(table) === n && s.panelTableButtonSelected]}
                   onPress={() => setTable(String(n))}>
@@ -591,7 +602,7 @@ export default function HomeScreen() {
               <Text style={s.panelHint}>Assigned trays: {o.trays.join(', ') || 'None'} · Each tray can belong to only one table; every table needs at least one.</Text>
             </View>) : <Text style={s.panelHint}>Choose tables below. An order form will appear here for each selected table.</Text>}
             <Text style={s.panelSectionLabel}>SELECT EXACTLY 3 TABLES FOR THIS TRIP</Text>
-            <View style={s.panelGrid}>
+            <View style={[s.panelGrid, isCompact && s.panelGridCompact]}>
               {tables.map(n => {
                 const isSelected = batchOrders.some(o => o.table_number === n);
                 return <Pressable key={n} style={[s.panelTableButton, isSelected && s.panelTableButtonSelected]}
@@ -604,7 +615,7 @@ export default function HomeScreen() {
             <View style={s.changeDestinationBox}>
               <Text style={s.panelSectionLabel}>CHANGE DESTINATION</Text>
               <Text style={s.panelHint}>{selected ? `Selected delivery: ${show(selected.order_id)} · Current table: T${show(selected.table_number)}` : 'Select an active delivery below to update its destination.'}</Text>
-              <View style={s.panelGrid}>
+              <View style={[s.panelGrid, isCompact && s.panelGridCompact]}>
                 {tables.map(n => <Pressable key={`destination-multi-${n}`}
                   style={[s.panelTableButton, Number(table) === n && s.panelTableButtonSelected]}
                   onPress={() => setTable(String(n))}>
@@ -708,6 +719,15 @@ export default function HomeScreen() {
 
 const s = StyleSheet.create({
   panelShell: { width: '100%', minHeight: 285, flexDirection: 'row', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#AEB4BB', borderRadius: 16, overflow: 'hidden', marginBottom: 8 },
+  phonePage: { paddingHorizontal: 12, paddingTop: 12, paddingBottom: 28, gap: 12 },
+  panelShellCompact: { flexDirection: 'column', minHeight: 0, borderRadius: 12 },
+  panelSidebarCompact: { width: '100%', minWidth: 0, maxWidth: undefined, paddingHorizontal: 10, paddingVertical: 10, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'stretch', borderRightWidth: 0, borderBottomWidth: 1, borderBottomColor: '#B8BEC5', gap: 7 },
+  panelSideButtonCompact: { width: '48%', minHeight: 44, flexGrow: 1, paddingHorizontal: 8, paddingVertical: 8 },
+  panelMainCompact: { paddingHorizontal: 12, paddingVertical: 12, gap: 12 },
+  panelFieldsCompact: { flexDirection: 'column', gap: 8 },
+  panelToplineCompact: { alignItems: 'flex-start', flexWrap: 'wrap', gap: 7, paddingBottom: 8 },
+  panelGridCompact: { gap: 7 },
+
   panelSidebar: { width: '21%', minWidth: 98, maxWidth: 180, paddingHorizontal: 10, paddingVertical: 14, justifyContent: 'space-around', alignItems: 'center', borderRightWidth: 1, borderRightColor: '#B8BEC5', gap: 9, backgroundColor: '#FFFFFF' },
   panelSideButton: { width: '94%', minHeight: 35, borderWidth: 1, borderColor: '#8F969E', borderRadius: 5, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', paddingHorizontal: 5, paddingVertical: 5 },
   panelStartButton: { backgroundColor: '#1677D2', borderColor: '#1268B8' },
@@ -778,7 +798,6 @@ const s = StyleSheet.create({
   mobilePage: { paddingHorizontal: 7, paddingTop: 5, paddingBottom: 6, gap: 4 },
   compactHeading: { color: C.text, fontSize: 13, fontWeight: '900', marginBottom: 0 },
   compactNotice: { backgroundColor: C.greenBg, borderColor: '#A8E3C3', borderWidth: 1, borderRadius: 6, padding: 4 },
-  mobileWorkflow: { gap: 4 },
   mobileOrderCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border, borderRadius: 7, padding: 7, gap: 4 },
   mobileSectionTitle: { color: C.text, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
   mobileInputRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
@@ -802,4 +821,47 @@ const s = StyleSheet.create({
   mobileStepCopy: { flex: 1, gap: 1 },
   mobileStepText: { color: C.text, fontSize: 9, fontWeight: '900', letterSpacing: 0 },
   mobileStepHint: { color: C.muted, fontSize: 7, lineHeight: 9 },
+
+  // Guided Staff mobile workflow: clear instructions, visible selection and sequential actions.
+  mobileWorkflow: { gap: 12 },
+  mobileIntroCard: { backgroundColor: '#F4F7FA', borderWidth: 1, borderColor: '#D8E0E8', borderRadius: 14, padding: 14, gap: 8 },
+  mobileEyebrow: { color: '#526170', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  mobileTitle: { color: '#17191C', fontSize: 22, fontWeight: '900' },
+  mobileIntroText: { color: '#626B75', fontSize: 12, lineHeight: 18 },
+  mobileGuideRow: { flexDirection: 'row', alignItems: 'center', gap: 9, marginTop: 2 },
+  mobileGuideNumber: { width: 23, height: 23, borderRadius: 12, overflow: 'hidden', textAlign: 'center', textAlignVertical: 'center', backgroundColor: '#263746', color: '#FFFFFF', fontWeight: '900', fontSize: 11 },
+  mobileGuideText: { flex: 1, color: '#333B44', fontSize: 11, fontWeight: '700' },
+  mobileCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D7DCE2', borderRadius: 14, padding: 13, gap: 10 },
+  mobileCardHeading: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  mobileCardTitle: { color: '#17191C', fontSize: 15, fontWeight: '900' },
+  mobileCardHint: { color: '#626B75', fontSize: 11, lineHeight: 16 },
+  mobileStepTag: { color: '#315D85', backgroundColor: '#EAF2F9', overflow: 'hidden', borderRadius: 7, paddingHorizontal: 8, paddingVertical: 5, fontSize: 9, fontWeight: '900' },
+  mobileModeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
+  mobileFieldHeading: { color: '#252A30', fontSize: 12, fontWeight: '900', marginTop: 2 },
+  mobileTableGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  mobileTable: { width: '17%', minWidth: 48, flexGrow: 1, minHeight: 42, borderWidth: 1, borderColor: '#B8C1CA', borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' },
+  mobileTableSelected: { borderColor: '#1677D2', borderWidth: 2, backgroundColor: '#EAF3FC' },
+  mobileTableText: { color: '#333B44', fontSize: 12, fontWeight: '800' },
+  mobileTableTextSelected: { color: '#1268B8', fontWeight: '900' },
+  mobileSummary: { backgroundColor: '#F1F5F8', borderRadius: 9, padding: 10, gap: 4 },
+  mobileSummaryText: { color: '#333B44', fontSize: 11, fontWeight: '700' },
+  mobilePrimaryButton: { minHeight: 46, borderRadius: 9, backgroundColor: '#1677D2', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 10 },
+  mobilePrimaryButtonText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 0.4, textAlign: 'center' },
+  mobileBatchCard: { borderWidth: 1, borderColor: '#D7DCE2', borderRadius: 10, padding: 10, gap: 8 },
+  mobileDeliveryList: { gap: 7 },
+  mobileDeliveryRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#D7DCE2', borderRadius: 10, padding: 11 },
+  mobileDeliveryRowSelected: { borderColor: '#1677D2', backgroundColor: '#EEF6FD' },
+  mobileDeliveryTitle: { color: '#17191C', fontSize: 12, fontWeight: '900' },
+  mobileSelectMark: { color: '#1677D2', fontSize: 22, fontWeight: '900' },
+  mobileCallout: { color: '#526170', backgroundColor: '#F4F7FA', borderRadius: 8, padding: 10, fontSize: 11, lineHeight: 16 },
+  mobileActionRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 9, marginTop: 3 },
+  mobileActionNumber: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#EAF2F9', color: '#315D85', textAlign: 'center', textAlignVertical: 'center', fontWeight: '900', overflow: 'hidden', fontSize: 11 },
+  mobileActionTitle: { color: '#17191C', fontSize: 12, fontWeight: '900' },
+  mobileWorkflowButton: { minHeight: 43, borderRadius: 9, borderWidth: 1, borderColor: '#8BB4D8', backgroundColor: '#EEF6FD', alignItems: 'center', justifyContent: 'center', padding: 9 },
+  mobileFinishButton: { borderColor: '#8CC7A0', backgroundColor: '#EAF5EE' },
+  mobileWorkflowButtonText: { color: '#253746', fontSize: 11, fontWeight: '900', textAlign: 'center' },
+  mobileDisabledButton: { opacity: 0.38 },
+  mobileNotice: { backgroundColor: '#EAF5EE', borderColor: '#A8E3C3', borderWidth: 1, borderRadius: 9, padding: 10 },
+  mobileExpandHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  mobileExpandIcon: { color: '#1677D2', fontSize: 24, fontWeight: '700', paddingHorizontal: 5 },
 });
