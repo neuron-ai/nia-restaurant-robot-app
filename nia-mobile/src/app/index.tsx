@@ -7,8 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 // For browser on this laptop use localhost. For a physical phone, update the IP below.
 
-const API_URL = 'http://192.168.31.93:8000';
-  
+const API_URL =
+  process.env.EXPO_PUBLIC_API_URL || 'http://52.201.74.89:8000';
 
 
 type RecordData = Record<string, any>;
@@ -201,19 +201,19 @@ export default function HomeScreen() {
     if (payloadItems.some(o => !o.order_id || !Number.isInteger(o.table_number) || o.table_number < 1 || !o.items.length || !o.trays.length)) {
       setNotice('Every table needs an order ID, valid table, food items and at least one tray.'); return;
     }
-    if (deliveryMode === 'multi' && payloadItems.length !== MAX_TRIP_STOPS) { setNotice(`Multi-task mode requires exactly ${MAX_TRIP_STOPS} tables for one trip. Select ${MAX_TRIP_STOPS} tables before creating the batch.`); return; }
+    if (deliveryMode === 'multi' && payloadItems.length !== MAX_TRIP_STOPS) { setNotice(`Multiple Orders requires exactly ${MAX_TRIP_STOPS} table orders. Select ${MAX_TRIP_STOPS} tables before creating the batch.`); return; }
     if (payloadItems.some(o => o.trays.some(n => !Number.isInteger(n) || n < 1 || n > trays.length))) { setNotice('Choose valid available trays for every table.'); return; }
     const allTrays = payloadItems.flatMap(o => o.trays);
-    if (new Set(allTrays).size !== allTrays.length) { setNotice('Each tray can be assigned to only one table per trip.'); return; }
+    if (new Set(allTrays).size !== allTrays.length) { setNotice('Each tray can be assigned to only one table in this multiple-order run.'); return; }
     if (!ready) { setNotice('Robot is not ready. Check connectivity, battery and robot status.'); return; }
     // Keep the existing backend request shape. The backend must interpret this as one
     // loaded multi-stop trip and advance through its three deliveries without a kitchen return.
-    await runAction('/batches', 'POST', { mode: deliveryMode, items: payloadItems }, 'Three-table delivery batch created.');
+    await runAction('/batches', 'POST', { mode: deliveryMode, items: payloadItems }, 'Multiple orders created successfully.');
   }
   function toggleBatchTable(tableNo: number) {
     setBatchOrders(old => {
       if (old.some(o => o.table_number === tableNo)) return old.filter(o => o.table_number !== tableNo);
-      if (old.length >= MAX_TRIP_STOPS) { setNotice(`One trip supports a maximum of ${MAX_TRIP_STOPS} table stops.`); return old; }
+      if (old.length >= MAX_TRIP_STOPS) { setNotice(`Multiple Orders supports a maximum of ${MAX_TRIP_STOPS} table orders.`); return old; }
       const used = new Set(old.flatMap(o => o.trays));
       const freeTray = trays.find(t => !used.has(t));
       if (!freeTray) { setNotice('No unassigned tray available. Increase available trays or remove a table.'); return old; }
@@ -268,12 +268,12 @@ export default function HomeScreen() {
     const nextTable = tables.find(n => !usedTables.has(n));
     const nextTray = trays.find(t => !usedTrays.has(t));
     if (nextTable === undefined || !nextTray || batchOrders.length >= MAX_TRIP_STOPS) {
-      setNotice(`No free table/tray slot available. One trip supports up to ${MAX_TRIP_STOPS} tables.`); return;
+      setNotice(`No free table/tray slot available. Multiple Orders supports up to ${MAX_TRIP_STOPS} tables.`); return;
     }
     setBatchOrders(old => [...old, { order_id: '', table_number: nextTable, items: '', trays: [nextTray] }]);
   }
   function removeBatchOrder(index: number) {
-    if (batchOrders.length <= MAX_TRIP_STOPS) { setNotice(`Keep exactly ${MAX_TRIP_STOPS} table orders in the multi-task batch. Switch to single-task mode to create a smaller order.`); return; }
+    if (batchOrders.length <= MAX_TRIP_STOPS) { setNotice(`Keep exactly ${MAX_TRIP_STOPS} table orders in Multiple Orders. Switch to Single order to create one order.`); return; }
     setBatchOrders(old => old.filter((_, i) => i !== index));
   }
 
@@ -467,7 +467,7 @@ export default function HomeScreen() {
 
         <View style={s.mobileCard}>
           <View style={s.mobileCardHeading}><View style={{ flex: 1 }}><Text style={s.mobileCardTitle}>Step 1 · Create order</Text><Text style={s.mobileCardHint}>Enter order details and choose the delivery destination.</Text></View><Text style={s.mobileStepTag}>STEP 1</Text></View>
-          <View style={s.mobileModeRow}><Choice label="Single order" selected={deliveryMode === 'single'} onPress={() => setDeliveryMode('single')} /><Choice label="3-table trip" selected={deliveryMode === 'multi'} onPress={() => setDeliveryMode('multi')} /></View>
+          <View style={s.mobileModeRow}><Choice label="Single order" selected={deliveryMode === 'single'} onPress={() => setDeliveryMode('single')} /><Choice label="Multiple Orders" selected={deliveryMode === 'multi'} onPress={() => setDeliveryMode('multi')} /></View>
           {deliveryMode === 'single' ? <>
             <Field label="Order ID" value={orderId} onChangeText={setOrderId} placeholder="e.g. ORD-1002" />
             <Field label="Food items (separate with commas)" value={items} onChangeText={setItems} placeholder="Veg Burger, French Fries" />
@@ -480,10 +480,10 @@ export default function HomeScreen() {
           </> : <>
             <Text style={s.mobileCardHint}>Select exactly three tables. Enter an order ID and food items for each, then assign trays.</Text>
             <View style={s.mobileTableGrid}>{tables.map(n => { const chosen = batchOrders.some(o => o.table_number === n); return <Pressable key={`m-batch-${n}`} onPress={() => toggleBatchTable(n)} style={[s.mobileTable, chosen && s.mobileTableSelected]}><Text style={[s.mobileTableText, chosen && s.mobileTableTextSelected]}>{chosen ? '✓ ' : ''}T{n}</Text></Pressable>; })}</View>
-            {batchOrders.map((o, index) => <View key={`m-batch-form-${o.table_number}`} style={s.mobileBatchCard}><Text style={s.mobileFieldHeading}>Table {o.table_number} order</Text><Field label="Order ID" value={o.order_id} onChangeText={v => updateBatchOrder(index, 'order_id', v)} placeholder="e.g. ORD-1002" /><Field label="Food items" value={o.items} onChangeText={v => updateBatchOrder(index, 'items', v)} placeholder="Pizza, Juice" /><Text style={s.mobileCardHint}>Assign trays (each tray can be used once per trip).</Text><View style={s.mobileModeRow}>{trays.map(t => <Choice key={`${o.table_number}-${t}`} label={t} selected={o.trays.includes(t)} onPress={() => toggleBatchTray(index, t)} />)}</View></View>)}
+            {batchOrders.map((o, index) => <View key={`m-batch-form-${o.table_number}`} style={s.mobileBatchCard}><Text style={s.mobileFieldHeading}>Table {o.table_number} order</Text><Field label="Order ID" value={o.order_id} onChangeText={v => updateBatchOrder(index, 'order_id', v)} placeholder="e.g. ORD-1002" /><Field label="Food items" value={o.items} onChangeText={v => updateBatchOrder(index, 'items', v)} placeholder="Pizza, Juice" /><Text style={s.mobileCardHint}>Assign trays (each tray can be used only once in this multiple-order run).</Text><View style={s.mobileModeRow}>{trays.map(t => <Choice key={`${o.table_number}-${t}`} label={t} selected={o.trays.includes(t)} onPress={() => toggleBatchTray(index, t)} />)}</View></View>)}
             <Text style={s.mobileSummaryText}>{batchOrders.length} of 3 tables selected</Text>
           </>}
-          <Pressable onPress={createBatch} disabled={busy} style={[s.mobilePrimaryButton, busy && s.disabled]}><Text style={s.mobilePrimaryButtonText}>{busy ? 'PLEASE WAIT…' : deliveryMode === 'single' ? 'CREATE ORDER' : 'CREATE 3-TABLE TRIP'}</Text></Pressable>
+          <Pressable onPress={createBatch} disabled={busy} style={[s.mobilePrimaryButton, busy && s.disabled]}><Text style={s.mobilePrimaryButtonText}>{busy ? 'PLEASE WAIT…' : deliveryMode === 'single' ? 'CREATE ORDER' : 'CREATE MULTIPLE ORDERS'}</Text></Pressable>
           <Text style={s.mobileCardHint}>After creating the order, select it in Step 2 to continue.</Text>
         </View>
 
@@ -497,7 +497,7 @@ export default function HomeScreen() {
           <View style={s.mobileCardHeading}><View style={{ flex: 1 }}><Text style={s.mobileCardTitle}>Step 3 · Complete delivery</Text><Text style={s.mobileCardHint}>Complete these actions in order. Unavailable actions become active when the robot reaches the correct stage.</Text></View><Text style={s.mobileStepTag}>STEP 3</Text></View>
           <View style={s.mobileActionRow}><Text style={s.mobileActionNumber}>A</Text><View style={{ flex: 1 }}><Text style={s.mobileActionTitle}>Robot arrived at kitchen</Text><Text style={s.mobileCardHint}>Confirm when NIA reaches the kitchen pickup point.</Text></View></View>
           <Pressable onPress={() => { if (!selected) { setNotice('Select an active delivery in Step 2 first.'); return; } deliveryAction('pickup-arrived', 'Kitchen pickup arrival recorded.'); }} disabled={busy || !canComeToKitchen} style={[s.mobileWorkflowButton, !canComeToKitchen && s.mobileDisabledButton]}><Text style={s.mobileWorkflowButtonText}>CONFIRM KITCHEN ARRIVAL</Text></Pressable>
-          <View style={s.mobileActionRow}><Text style={s.mobileActionNumber}>B</Text><View style={{ flex: 1 }}><Text style={s.mobileActionTitle}>Food loaded · Start delivery</Text><Text style={s.mobileCardHint}>After placing food on the assigned tray, confirm loading and start the trip.</Text></View></View>
+          <View style={s.mobileActionRow}><Text style={s.mobileActionNumber}>B</Text><View style={{ flex: 1 }}><Text style={s.mobileActionTitle}>Food loaded · Start delivery</Text><Text style={s.mobileCardHint}>After placing food on the assigned tray, confirm loading and start delivery.</Text></View></View>
           <Pressable onPress={loadFoodAndDispatch} disabled={busy || !(canConfirmFood || canDispatch)} style={[s.mobileWorkflowButton, !(canConfirmFood || canDispatch) && s.mobileDisabledButton]}><Text style={s.mobileWorkflowButtonText}>CONFIRM FOOD & START DELIVERY</Text></Pressable>
           <View style={s.mobileActionRow}><Text style={s.mobileActionNumber}>C</Text><View style={{ flex: 1 }}><Text style={s.mobileActionTitle}>Confirm customer delivery</Text><Text style={s.mobileCardHint}>When NIA reaches the table, confirm the handoff and completion.</Text></View></View>
           <Pressable onPress={confirmDeliveryAndReturn} disabled={busy || !(canConfirmArrival || selectedStatus === 'arrived_at_table' || selectedStatus === 'handoff_confirmed')} style={[s.mobileWorkflowButton, s.mobileFinishButton, !(canConfirmArrival || selectedStatus === 'arrived_at_table' || selectedStatus === 'handoff_confirmed') && s.mobileDisabledButton]}><Text style={s.mobileWorkflowButtonText}>CONFIRM DELIVERY COMPLETE</Text></Pressable>
@@ -536,7 +536,7 @@ export default function HomeScreen() {
           <View style={[s.panelTopline, isCompact && s.panelToplineCompact]}>
             <View style={{ flex: 1, gap: 3 }}>
               <Text style={s.panelCaption}>DELIVERY PLANNER</Text>
-              <Text style={s.panelSubtitle}>Choose single-task or multi-task delivery. Assignment is validated and saved by FastAPI.</Text>
+              <Text style={s.panelSubtitle}>Choose Single Order or Multiple Orders. Assignment is validated and saved by FastAPI.</Text>
             </View>
             <Text style={s.panelStatus}>{connection === 'online' ? 'SYSTEM ONLINE' : connection === 'offline' ? 'SYSTEM OFFLINE' : 'CONNECTING'}</Text>
           </View>
@@ -544,7 +544,7 @@ export default function HomeScreen() {
             <Text style={s.panelSectionLabel}>DELIVERY TYPE</Text>
             <View style={s.panelModeChoices}>
               <Choice label="Single Task" selected={deliveryMode === 'single'} onPress={() => setDeliveryMode('single')} />
-              <Choice label="Multiple Tasks" selected={deliveryMode === 'multi'} onPress={() => setDeliveryMode('multi')} />
+              <Choice label="Multiple Orders" selected={deliveryMode === 'multi'} onPress={() => setDeliveryMode('multi')} />
             </View>
           </View>
 {deliveryMode === 'single' ? <>
@@ -581,7 +581,7 @@ export default function HomeScreen() {
               <ActionButton title="Save destination" tone="secondary" disabled={busy || !selected} onPress={updateTable} />
             </View>
           </> : <>
-            <Text style={s.panelSectionLabel}>3-TABLE MULTI-STOP TRIP</Text>
+            <Text style={s.panelSectionLabel}>MULTIPLE ORDERS</Text>
             <Text style={s.panelHint}>Load all three orders at the kitchen in one pickup. The intended route is Table 1 → Table 2 → Table 3, then return to docking.</Text>
             {batchOrders.length ? batchOrders.map((o, index) => <View key={o.table_number} style={s.batchItem}>
               <View style={s.batchHeading}>
@@ -601,7 +601,7 @@ export default function HomeScreen() {
               <View style={s.choiceWrap}>{trays.map(t => <Choice key={t} label={t} selected={o.trays.includes(t)} onPress={() => toggleBatchTray(index, t)} />)}</View>
               <Text style={s.panelHint}>Assigned trays: {o.trays.join(', ') || 'None'} · Each tray can belong to only one table; every table needs at least one.</Text>
             </View>) : <Text style={s.panelHint}>Choose tables below. An order form will appear here for each selected table.</Text>}
-            <Text style={s.panelSectionLabel}>SELECT EXACTLY 3 TABLES FOR THIS TRIP</Text>
+            <Text style={s.panelSectionLabel}>SELECT 3 TABLES FOR MULTIPLE ORDERS</Text>
             <View style={[s.panelGrid, isCompact && s.panelGridCompact]}>
               {tables.map(n => {
                 const isSelected = batchOrders.some(o => o.table_number === n);
@@ -611,7 +611,7 @@ export default function HomeScreen() {
                 </Pressable>;
               })}
             </View>
-            <Text style={s.panelHint}>{batchOrders.length} of {MAX_TRIP_STOPS} tables selected. Each table needs its own order ID, food items and a separate tray. All three are loaded before the robot starts its multi-stop route.</Text>
+            <Text style={s.panelHint}>{batchOrders.length} of {MAX_TRIP_STOPS} tables selected. Each table needs its own order ID, food items and a separate tray. All three orders are loaded before the robot starts the delivery route.</Text>
             <View style={s.changeDestinationBox}>
               <Text style={s.panelSectionLabel}>CHANGE DESTINATION</Text>
               <Text style={s.panelHint}>{selected ? `Selected delivery: ${show(selected.order_id)} · Current table: T${show(selected.table_number)}` : 'Select an active delivery below to update its destination.'}</Text>
@@ -698,7 +698,7 @@ export default function HomeScreen() {
           <Text style={s.helper}>Tap a delivery to continue its workflow.</Text>
         </Card>
       </> : <>
-        <Card title="Select delivery" subtitle="Choose the active task before confirming workflow steps">
+        {!(isCompact && section === 'workflow') && <Card title="Select delivery" subtitle="Choose the active task before confirming workflow steps">
           {deliveries.length ? <View style={s.choiceWrap}>{[...deliveries].filter(d => !['completed', 'cancelled'].includes(d.status)).sort((a, b) => {
             const activeId = Number(robot?.current_delivery_id);
             const aActive = Number(a.delivery_id ?? a.id) === activeId;
@@ -706,7 +706,7 @@ export default function HomeScreen() {
             return Number(bActive) - Number(aActive) || Number(b.delivery_id ?? b.id) - Number(a.delivery_id ?? a.id);
           }).map(d => { const id = Number(d.delivery_id ?? d.id); const isRobotTask = Number(robot?.current_delivery_id) === id; return <Choice key={String(id)} label={`${isRobotTask ? '● ACTIVE · ' : ''}#${id} · ${show(d.order_id)} · Table ${show(d.table_number)} · ${show(d.status).replaceAll('_', ' ')}`} selected={String(id) === selectedId} onPress={() => { selectDelivery(id); setTable(String(d.table_number ?? table)); }} />; })}</View> : <Text style={s.muted}>No active delivery yet. Create one above.</Text>}
           {selected ? <View style={s.selectedBox}><Text style={s.selectedTitle}>Selected: {show(selected.order_id)} · Table {show(selected.table_number)}</Text><Text style={s.muted}>Current status: {show(selected.status).replaceAll('_', ' ')}</Text><Text style={s.muted}>Assigned tray: {Array.isArray(selected?.tray_numbers) && selected.tray_numbers.length ? selected.tray_numbers.map((n: number) => `Tray ${n}`).join(', ') : selected?.tray_number ? `Tray ${selected.tray_number}` : 'Not assigned'}</Text>{selected?.batch_id ? <Text style={s.muted}>Batch: {selected.batch_id} · deliveries continue sequentially</Text> : null}<Text style={s.helper}>{selectedStatus === 'queued' ? 'This delivery is waiting in the queue. Workflow actions unlock automatically after the robot is assigned to it.' : selectedIsRobotTask ? 'This is the delivery currently assigned to NIA.' : 'This delivery is not currently assigned to NIA. Select the active task to operate the robot.'}</Text></View> : <Text style={s.helper}>Create or select a delivery to use the action buttons below.</Text>}
-        </Card>
+        </Card>}
 
       </>}
       {!(isCompact && section === 'workflow') && <>
